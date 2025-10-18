@@ -1,0 +1,11 @@
+C:\Users\ryout\repository\AIdentity\rust-wasm\target\debug\deps\term-64cd54818abb3315.d: C:\Users\ryout\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\term-1.2.0\src\lib.rs C:\Users\ryout\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\term-1.2.0\src\terminfo\mod.rs C:\Users\ryout\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\term-1.2.0\src\terminfo\searcher.rs C:\Users\ryout\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\term-1.2.0\src\terminfo\parser\compiled.rs C:\Users\ryout\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\term-1.2.0\src\terminfo\parser\names.rs C:\Users\ryout\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\term-1.2.0\src\terminfo\parm.rs C:\Users\ryout\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\term-1.2.0\src\win.rs
+
+C:\Users\ryout\repository\AIdentity\rust-wasm\target\debug\deps\libterm-64cd54818abb3315.rmeta: C:\Users\ryout\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\term-1.2.0\src\lib.rs C:\Users\ryout\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\term-1.2.0\src\terminfo\mod.rs C:\Users\ryout\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\term-1.2.0\src\terminfo\searcher.rs C:\Users\ryout\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\term-1.2.0\src\terminfo\parser\compiled.rs C:\Users\ryout\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\term-1.2.0\src\terminfo\parser\names.rs C:\Users\ryout\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\term-1.2.0\src\terminfo\parm.rs C:\Users\ryout\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\term-1.2.0\src\win.rs
+
+C:\Users\ryout\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\term-1.2.0\src\lib.rs:
+C:\Users\ryout\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\term-1.2.0\src\terminfo\mod.rs:
+C:\Users\ryout\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\term-1.2.0\src\terminfo\searcher.rs:
+C:\Users\ryout\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\term-1.2.0\src\terminfo\parser\compiled.rs:
+C:\Users\ryout\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\term-1.2.0\src\terminfo\parser\names.rs:
+C:\Users\ryout\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\term-1.2.0\src\terminfo\parm.rs:
+C:\Users\ryout\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\term-1.2.0\src\win.rs:
