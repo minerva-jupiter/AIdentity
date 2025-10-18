@@ -3,4 +3,12 @@ name = "rust-wasm"
 version = "0.1.0"
 edition = "2024"
 
+[lib]
+crate-type = ["cdylib"]
+
 [dependencies]
+js-sys = "0.3.81"
+vibrato = "0.5.2"
+wasm-bindgen = "0.2.104"
+getrandom_v02 = { package = "getrandom", version = "0.2", features = ["js"] }
+getrandom_v03 = { package = "getrandom", version = "0.3", features = ["wasm_js"] }

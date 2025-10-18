@@ -1,14 +1,18 @@
-pub fn add(left: u64, right: u64) -> u64 {
-    left + right
-}
+use std::io::Cursor;
+use vibrato::{Dictionary, Tokenizer};
+use wasm_bindgen::prelude::*;
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+#[wasm_bindgen]
+pub fn chat(dict_data: &[u8], input: &str) -> Result<String, JsValue> {
+    let reader = Cursor::new(dict_data);
+    let dict = Dictionary::read(reader)
+        .map_err(|_|{JsValue::from(js_sys::Error::new("Dictionary road Error"))})?;
+    let tokenizer = Tokenizer::new(dict);
+    let mut worker = tokenizer.new_worker();
 
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
+    worker.reset_sentence(input);
+    worker.tokenize();
+
+    let ans : String= "そんなことを言ってるんじゃない。".to_string();
+    Ok(ans)
 }

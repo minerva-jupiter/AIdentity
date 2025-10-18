@@ -1,3 +1,13 @@
+# AIdentity
+
+## Development env
+1. bun
+2. cargo and rust standard
+3. wasm-pack(rust)
+```
+cargo install wasm-pack
+```
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started

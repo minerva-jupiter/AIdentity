@@ -1,7 +1,14 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Noto_Sans_JP } from 'next/font/google';
 import "./globals.css";
 
+const notoSansJp = Noto_Sans_JP({
+  subsets: ['latin'],
+  weight: ['400', '700'],
+  preload: false,
+  variable: '--font-noto-sans-jp',
+  display: 'swap',
+})
 
 export const metadata: Metadata = {
   title: "AIdentity",
@@ -14,7 +21,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="jp">
+    <html lang="jp" className={notoSansJp.variable}>
       <body>
         {children}
       </body>

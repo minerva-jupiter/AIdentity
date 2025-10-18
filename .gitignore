@@ -39,3 +39,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# package-lock.json
+package-lock.json
+
+# wasm
+/rust-wasm/target/*
+!/rust-wasm/target/wasm32-unknown-unknown/*
+/rust-wasm/pkg/*
