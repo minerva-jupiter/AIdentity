@@ -4,7 +4,8 @@ use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
 pub fn chat(dict_data: &[u8], input: &str) -> Result<String, JsValue> {
-    let reader = Cursor::new(dict_data);
+    let encoded = Cursor::new(dict_data);
+    let reader = zstd::Decoder::new(encoded).unwrap();
     let dict = Dictionary::read(reader)
         .map_err(|_|{JsValue::from(js_sys::Error::new("Dictionary road Error"))})?;
     let tokenizer = Tokenizer::new(dict);
@@ -13,6 +14,6 @@ pub fn chat(dict_data: &[u8], input: &str) -> Result<String, JsValue> {
     worker.reset_sentence(input);
     worker.tokenize();
 
-    let ans : String= "そんなことを言ってるんじゃない。".to_string();
+    let ans : String= "馬鹿なことを言ってないで。".to_string();
     Ok(ans)
 }

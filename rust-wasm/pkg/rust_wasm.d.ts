@@ -7,6 +7,14 @@ export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembl
 export interface InitOutput {
   readonly memory: WebAssembly.Memory;
   readonly chat: (a: number, b: number, c: number, d: number) => [number, number, number, number];
+  readonly rust_zstd_wasm_shim_qsort: (a: number, b: number, c: number, d: number) => void;
+  readonly rust_zstd_wasm_shim_malloc: (a: number) => number;
+  readonly rust_zstd_wasm_shim_memcmp: (a: number, b: number, c: number) => number;
+  readonly rust_zstd_wasm_shim_calloc: (a: number, b: number) => number;
+  readonly rust_zstd_wasm_shim_free: (a: number) => void;
+  readonly rust_zstd_wasm_shim_memcpy: (a: number, b: number, c: number) => number;
+  readonly rust_zstd_wasm_shim_memmove: (a: number, b: number, c: number) => number;
+  readonly rust_zstd_wasm_shim_memset: (a: number, b: number, c: number) => number;
   readonly __wbindgen_export_0: WebAssembly.Table;
   readonly __wbindgen_malloc: (a: number, b: number) => number;
   readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;

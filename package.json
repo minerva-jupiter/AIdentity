@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
+	"wasmbuild": "cd ./rust-wasm/ && wasm-pack build --target web",
     "start": "next start",
     "lint": "eslint"
   },

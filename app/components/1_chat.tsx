@@ -118,7 +118,7 @@ function ChatPage() {
 	const [messages, setMessages] = useState<Message[]>(initialMessages);
 	const [ dict, setDict ] = useState<Uint8Array|undefined>(undefined);
 	const messagesEndRef = useRef<HTMLDivElement>(null);
-	const dictPath = '/system.dic';
+	const dictPath = '/system.dic.zst';
 
 	useEffect(() => {
 		messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
