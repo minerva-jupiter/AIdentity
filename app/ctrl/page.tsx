@@ -58,7 +58,7 @@ export default function Chat() {
 				.then(() => {
 					checkFullscreen();
 				})
-				.catch((_err:any) => {
+				.catch(() => {
 					setIsFullscreen(false);
 				})
 				.finally(() => {
@@ -74,18 +74,12 @@ export default function Chat() {
 		return () => {
 			document.removeEventListener('fullscreenchange', checkFullscreen);
 		};
-
-		//for stage
-//		document.addEventListener('stagechange', checkStage);
-//		return () => {
-//			document.removeEventListener('stagechange', checkStage);
-//		};
 	}, []);
 
 	const enterFullScreen = () => {
 		const element = pageRef.current;
 		if (element && element.requestFullscreen) {
-			element.requestFullscreen().catch((_err:any) => {
+			element.requestFullscreen().catch(() => {
 				alert("フルスクリーンにできませんでした。")
 				setIsFullscreen(false)
 			})
