@@ -45,3 +45,4 @@ package-lock.json
 
 # wasm
 /rust-wasm/target/
+!/rust-wasm/pkg/
