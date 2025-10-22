@@ -9,7 +9,6 @@ import type Konva from 'konva';
 const SecondDraw: React.FC<StageProps> = ({ onComplete }) => {
 	return(
 		<div>
-		<h1>this is draw</h1>
 		<DrawingApp onComplete={onComplete}/>
 		</div>
 	)
