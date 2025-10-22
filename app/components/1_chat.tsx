@@ -6,7 +6,7 @@ import init, { chat } from '../../rust-wasm/pkg/rust_wasm.js';
 
 const FirstChat: React.FC<StageProps> = ({ onComplete }) => {
 	return(
-		<ChatPage/>
+		<ChatPage onComplete={onComplete}/>
 	)
 };
 
@@ -114,7 +114,7 @@ const MessageInput: React.FC<{ onSend: (text: string) => void }> = ({ onSend }) 
 
 
 
-function ChatPage() {
+function ChatPage({onComplete}:StageProps) {
 	const [messages, setMessages] = useState<Message[]>(initialMessages);
 	const [ dict, setDict ] = useState<Uint8Array|undefined>(undefined);
 	const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -136,6 +136,8 @@ function ChatPage() {
 		init();
 	}, []);
 
+	let talktimes = 1;
+
 	const handleSendMessage = useCallback((text: string) => {
 		console.log(dict);
 		if (text.trim() === '') return;
@@ -153,7 +155,12 @@ function ChatPage() {
 			sender: 'ai',
 		};
 		setMessages((prev) => [...prev, aiResponse]);
-	}, [dict]);
+		talktimes += 1;
+		console.log("talktimes is "+talktimes);
+		if(talktimes >= 3){ 
+			onComplete();
+		}
+	}, [dict, onComplete]);
 
 	const pageContainerStyle: React.CSSProperties = {
 		display: 'flex',

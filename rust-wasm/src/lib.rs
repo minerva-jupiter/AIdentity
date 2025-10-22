@@ -1,4 +1,4 @@
-use std::io::Cursor;
+use std::{io:: Cursor, usize};
 use vibrato::{Dictionary, Tokenizer};
 use wasm_bindgen::prelude::*;
 
@@ -14,6 +14,20 @@ pub fn chat(dict_data: &[u8], input: &str) -> Result<String, JsValue> {
     worker.reset_sentence(input);
     worker.tokenize();
 
-    let ans : String= "馬鹿なことを言ってないで。".to_string();
+    let mut ans : String= "馬鹿なことを言ってないで。".to_string();
+
+    match worker.num_tokens() {
+        1..5 => {
+            ans = "何を言っているの？".to_string();
+        },
+        5..10 => {
+            ans = "そんなことができるわけないじゃない？".to_string();
+        },
+        10..=usize::MAX => {
+            ans = "そんなこと思ってるんじゃないんでしょ？".to_string();
+        }
+        _ => {ans = "意味がわからない。".to_string();},
+    }
+
     Ok(ans)
 }
