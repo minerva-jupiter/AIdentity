@@ -1,7 +1,7 @@
 # AIdentity
 
 ## Development env
-1. bun(it can turn npm but there are no package-lock.json)
+1. bun(it can be npm but there are no package-lock.json)
 2. cargo and rust standard
 3. wasm-pack(rust)
 ```
