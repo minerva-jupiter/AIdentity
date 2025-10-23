@@ -139,7 +139,6 @@ function ChatPage({onComplete}:StageProps) {
 	let talktimes = 1;
 
 	const handleSendMessage = useCallback((text: string) => {
-		console.log(dict);
 		if (text.trim() === '') return;
 
 		const newUserMessage: Message = {
@@ -156,8 +155,7 @@ function ChatPage({onComplete}:StageProps) {
 		};
 		setMessages((prev) => [...prev, aiResponse]);
 		talktimes += 1;
-		console.log("talktimes is "+talktimes);
-		if(talktimes >= 3){ 
+		if(talktimes >= 5){ 
 			onComplete();
 		}
 	}, [dict, onComplete]);
