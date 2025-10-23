@@ -124,6 +124,81 @@ export function chat(dict_data, input) {
     }
 }
 
+/**
+ *
+ * * SVGパス上で指定された点に最も近い点を計算します。
+ *
+ * @param {string} path_d
+ * @param {number} x
+ * @param {number} y
+ * @param {number} _snapping_distance_viewbox
+ * @returns {NearestPointResult | undefined}
+ */
+export function find_nearest_point_on_path(path_d, x, y, _snapping_distance_viewbox) {
+    const ptr0 = passStringToWasm0(path_d, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ret = wasm.find_nearest_point_on_path(ptr0, len0, x, y, _snapping_distance_viewbox);
+    return ret === 0 ? undefined : NearestPointResult.__wrap(ret);
+}
+
+export function main_js() {
+    wasm.main_js();
+}
+
+const NearestPointResultFinalization = (typeof FinalizationRegistry === 'undefined')
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry(ptr => wasm.__wbg_nearestpointresult_free(ptr >>> 0, 1));
+
+export class NearestPointResult {
+
+    static __wrap(ptr) {
+        ptr = ptr >>> 0;
+        const obj = Object.create(NearestPointResult.prototype);
+        obj.__wbg_ptr = ptr;
+        NearestPointResultFinalization.register(obj, obj.__wbg_ptr, obj);
+        return obj;
+    }
+
+    __destroy_into_raw() {
+        const ptr = this.__wbg_ptr;
+        this.__wbg_ptr = 0;
+        NearestPointResultFinalization.unregister(this);
+        return ptr;
+    }
+
+    free() {
+        const ptr = this.__destroy_into_raw();
+        wasm.__wbg_nearestpointresult_free(ptr, 0);
+    }
+    /**
+     * @returns {number}
+     */
+    get x() {
+        const ret = wasm.__wbg_get_nearestpointresult_x(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+     * @param {number} arg0
+     */
+    set x(arg0) {
+        wasm.__wbg_set_nearestpointresult_x(this.__wbg_ptr, arg0);
+    }
+    /**
+     * @returns {number}
+     */
+    get y() {
+        const ret = wasm.__wbg_get_nearestpointresult_y(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+     * @param {number} arg0
+     */
+    set y(arg0) {
+        wasm.__wbg_set_nearestpointresult_y(this.__wbg_ptr, arg0);
+    }
+}
+if (Symbol.dispose) NearestPointResult.prototype[Symbol.dispose] = NearestPointResult.prototype.free;
+
 const EXPECTED_RESPONSE_TYPES = new Set(['basic', 'cors', 'default']);
 
 async function __wbg_load(module, imports) {

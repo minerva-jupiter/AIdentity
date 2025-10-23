@@ -2,6 +2,13 @@
 /* eslint-disable */
 export const memory: WebAssembly.Memory;
 export const chat: (a: number, b: number, c: number, d: number) => [number, number, number, number];
+export const __wbg_nearestpointresult_free: (a: number, b: number) => void;
+export const __wbg_get_nearestpointresult_x: (a: number) => number;
+export const __wbg_set_nearestpointresult_x: (a: number, b: number) => void;
+export const __wbg_get_nearestpointresult_y: (a: number) => number;
+export const __wbg_set_nearestpointresult_y: (a: number, b: number) => void;
+export const find_nearest_point_on_path: (a: number, b: number, c: number, d: number, e: number) => number;
+export const main_js: () => void;
 export const rust_zstd_wasm_shim_qsort: (a: number, b: number, c: number, d: number) => void;
 export const rust_zstd_wasm_shim_malloc: (a: number) => number;
 export const rust_zstd_wasm_shim_memcmp: (a: number, b: number, c: number) => number;

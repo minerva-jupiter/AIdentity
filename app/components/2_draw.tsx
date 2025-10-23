@@ -1,36 +1,23 @@
 'use client'
 
-import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react';
-// ⚠️ WASMモジュールのインポート。パスはプロジェクト構造に合わせてください。
-// 例: import { find_nearest_point_on_path } from '@/wasm/pkg/snap_calculator'; 
+import React, { useState, useRef, useCallback, useEffect } from 'react';
+import init, { find_nearest_point_on_path, NearestPointResult } from '../../rust-wasm/pkg/rust_wasm.js';
+import { StageProps } from '../ctrl/page.tsx';
 
-// WASMモジュールが返すべき型を定義
-interface NearestPointResult {
-    x: number;
-    y: number;
-}
-// find_nearest_point_on_path関数のダミー宣言 (WASMの実際のインポートに置き換え)
-declare function find_nearest_point_on_path(
-    path_d: string, 
-    target_x: number, 
-    target_y: number,
-    max_distance: number
-): NearestPointResult | null; 
-
-// --- 型定義 ---
-interface StageProps { onComplete: () => void; }
-type Point = { x: number; y: number; };
+type Tool = 'pen';
+type Point = { x: number; y: number; }; 
 
 interface LineData {
     id: number;
-    tool: 'pen';
+    tool: Tool;
 	points: Point[];      
 	targetPoints: Point[]; 
 }
 
-// ⚠️ 実際のSVGのパスデータ。このパスデータに基づいてWASMが計算します。
-const BACKGROUND_SVG_PATH_D = "M100 100 L400 100 L400 400 L100 400 Z"; 
-const SNAPPING_DISTANCE_PIXELS = 50; // 吸着距離 (50px)
+const BACKGROUND_SVG_PATH_D_DEFAULT = ""; 
+const VIEWSBOX_SIZE = 500; 
+const SNAPPING_DISTANCE_PIXELS = 30; 
+
 
 function DrawingApp({onComplete}: StageProps) {
 	const [isClient, setIsClient] = useState(false);
@@ -38,6 +25,11 @@ function DrawingApp({onComplete}: StageProps) {
 	const [lines, setLines] = useState<LineData[]>([]); 
 	const [currentLines, setCurrentLines] = useState<LineData[]>([]); 
 
+    const [stageWidth, setStageWidth] = useState(0);
+    const [stageHeight, setStageHeight] = useState(0);
+    const [backgroundPathD, setBackgroundPathD] = useState(BACKGROUND_SVG_PATH_D_DEFAULT); 
+    const [viewBoxSize, setViewBoxSize] = useState(VIEWSBOX_SIZE); 
+    
 	const isDrawing = useRef(false);
 	
 	const animationRef = useRef<number>(0);
@@ -45,54 +37,62 @@ function DrawingApp({onComplete}: StageProps) {
 
 	const stageRef = useRef<HTMLDivElement>(null);
 
-    // Stageサイズはビューボックスの標準値として500を基準に、画面サイズに合わせてスケーリングします。
-    const VIEWSBOX_SIZE = 500;
-	const [stageSize, setStageSize] = useState(0);
+	useEffect(() => {
+		init();
+	},[])
 
+	// --- 1. サイズ計算とステージ設定 (画面全体を使用) ---
 	useEffect(() => {
 		setIsClient(true);
 		
 		const handleResize = () => {
-			if (typeof window !== 'undefined') {
-				const size = Math.min(window.innerWidth, window.innerHeight);
-				// 画面の小さい方に合わせて90%のサイズを設定
-				setStageSize(size * 0.9);
+			if (typeof globalThis !== 'undefined') {
+				setStageWidth(globalThis.innerWidth);
+				setStageHeight(globalThis.innerHeight);
 			}
 		};
 
 		handleResize();
-		window.addEventListener('resize', handleResize);
+		globalThis.addEventListener('resize', handleResize);
 
 		return () => {
-			window.removeEventListener('resize', handleResize);
+			globalThis.removeEventListener('resize', handleResize);
 		};
 	}, []);
-
-
-    // --- 座標変換ユーティリティ ---
-    // 画面座標をSVGビューボックス座標にスケーリング
+    
+    // --- 2. 座標変換ユーティリティ ---
+    
     const scaleToViewBox = useCallback((p: Point): Point => {
-        if (stageSize === 0) return p;
-        const scale = VIEWSBOX_SIZE / stageSize;
-        return {
-            x: p.x * scale,
-            y: p.y * scale,
-        };
-    }, [stageSize]);
+        if (stageWidth === 0 || stageHeight === 0) return p;
+        
+        const effectiveSize = Math.min(stageWidth, stageHeight);
+        const scale = viewBoxSize / effectiveSize;
 
-    // SVGビューボックス座標を画面座標にスケーリング
+        const offsetX = (stageWidth - effectiveSize) / 2;
+        const offsetY = (stageHeight - effectiveSize) / 2;
+
+        return {
+            x: (p.x - offsetX) * scale,
+            y: (p.y - offsetY) * scale,
+        };
+    }, [stageWidth, stageHeight, viewBoxSize]);
+
     const scaleToScreen = useCallback((p: Point): Point => {
-        if (stageSize === 0) return p;
-        const scale = stageSize / VIEWSBOX_SIZE;
+        if (stageWidth === 0 || stageHeight === 0) return p;
+
+        const effectiveSize = Math.min(stageWidth, stageHeight);
+        const scale = effectiveSize / viewBoxSize;
+        
+        const offsetX = (stageWidth - effectiveSize) / 2;
+        const offsetY = (stageHeight - effectiveSize) / 2;
+
         return {
-            x: p.x * scale,
-            y: p.y * scale,
+            x: p.x * scale + offsetX,
+            y: p.y * scale + offsetY,
         };
-    }, [stageSize]);
+    }, [stageWidth, stageHeight, viewBoxSize]);
 
-
-    // ユーティリティ関数: マウス/タッチ座標の取得 (画面座標)
-	const getPointerPosition = useCallback((e: React.MouseEvent | React.TouchEvent | MouseEvent | TouchEvent): Point | null => {
+    const getPointerPosition = useCallback((e: React.MouseEvent | React.TouchEvent | MouseEvent | TouchEvent): Point | null => {
 		if (!stageRef.current) return null;
 		const rect = stageRef.current.getBoundingClientRect();
 		
@@ -108,51 +108,106 @@ function DrawingApp({onComplete}: StageProps) {
 
 		return { x: clientX - rect.left, y: clientY - rect.top };
 	}, []);
+    
+    // --- 3. SVGコンテンツの取得ロジック (DOMParser) ---
+    useEffect(() => {
+        const fetchAndParseSvg = async () => {
+            try {
+                const response = await fetch('/whiteperson.svg'); 
+                const svgText = await response.text();
+
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(svgText, "image/svg+xml");
+                
+                const svgElement = doc.querySelector('svg');
+                if (svgElement) {
+                    const viewBoxAttr = svgElement.getAttribute('viewBox');
+                    if (viewBoxAttr) {
+                        const parts = viewBoxAttr.trim().split(/\s+/);
+                        if (parts.length === 4) {
+                             const size = Math.max(parseFloat(parts[2]), parseFloat(parts[3]));
+                             if (!isNaN(size) && size > 0) {
+                                 setViewBoxSize(size);
+                             }
+                        }
+                    }
+                }
+                
+                const pathElements = doc.querySelectorAll('path');
+                let foundDValue = null;
+
+                for (const element of Array.from(pathElements)) {
+                    const dValue = element.getAttribute('d');
+                    if (dValue && dValue.trim().length > 0) {
+                        foundDValue = dValue;
+                        break; 
+                    }
+                }
+
+                if (foundDValue) {
+                    setBackgroundPathD(foundDValue);
+                    return; 
+                }
+                
+                console.error("Error: <path> element or 'd' attribute not found in whiteperson.svg.");
+
+            } catch (error) {
+                console.error("Failed to load or parse whiteperson.svg:", error);
+            }
+        };
+
+        if (isClient && backgroundPathD === "") { 
+             fetchAndParseSvg();
+        }
+    }, [isClient, backgroundPathD]);
 
 
-	// --- 吸着ロジック (WASM利用) ---
+    // --- 4. 吸着ロジック (WASM呼び出し) ---
     const calculateNearestTargetPoint = useCallback((p: Point): Point => {
-        // 描画点 (画面座標) を WASM に渡す前にビューボックス座標に変換
         const p_viewbox = scaleToViewBox(p);
         
-        // ⚠️ WASMの代わりにダミー関数を使用
-        /*
-        const nearest_viewbox = find_nearest_point_on_path(
-            BACKGROUND_SVG_PATH_D, 
+        const effectiveSize = Math.min(stageWidth, stageHeight);
+        const snapping_distance_viewbox = SNAPPING_DISTANCE_PIXELS * (viewBoxSize / effectiveSize);
+
+        // ⚠️ WASM呼び出し
+        const nearest_viewbox: NearestPointResult | null = find_nearest_point_on_path(
+            backgroundPathD, 
             p_viewbox.x, 
             p_viewbox.y,
-            SNAPPING_DISTANCE_PIXELS // 距離はビューボックス座標系で計算される
+            snapping_distance_viewbox
         );
+		console.log("nearest_viewbox is ",nearest_viewbox);
 
         if (nearest_viewbox) {
-            // 見つかったターゲット点 (ビューボックス座標) を画面座標に戻して返す
             return scaleToScreen(nearest_viewbox);
         }
-        */
-
-        // 吸着しない場合は元の点を返す
         return p; 
-
-    }, [scaleToViewBox, scaleToScreen]); 
+    }, [scaleToViewBox, scaleToScreen, stageWidth, stageHeight, viewBoxSize, backgroundPathD]); 
 
 	const calculateTargetPoints = useCallback((points: Point[]): Point[] => {
-        // 全点に対してターゲット点を計算
         return points.map(p => calculateNearestTargetPoint(p));
 	}, [calculateNearestTargetPoint]);
 
-	// --- イベントハンドラ（前回の実装を継承し、Konvaの型を削除） ---
 
+    // --- 5. イベントハンドラ (吹き飛んでいた部分を再定義) ---
+
+    /**
+	 * マウス・タッチ開始時の処理
+	 */
     const handleMouseDown = useCallback((e: React.MouseEvent | React.TouchEvent) => {
 		isDrawing.current = true;
 		const pos = getPointerPosition(e);
 		if (pos) {
             lineIdCounter.current += 1;
-            const newLine = { id: lineIdCounter.current, tool: 'pen' as const, points: [pos], targetPoints: [] };
+            const newLine: LineData = { id: lineIdCounter.current, tool: 'pen', points: [pos], targetPoints: [] };
 			setLines(prev => [...prev, newLine]);
             setCurrentLines(prev => [...prev, newLine]);
 		}
 	}, [getPointerPosition]); 
 
+    /**
+	 * マウス・タッチ移動時の処理
+	 */
 	const handleMouseMove = useCallback((e: React.MouseEvent | React.TouchEvent) => {
 		if (!isDrawing.current) return;
 		const point = getPointerPosition(e);
@@ -162,15 +217,18 @@ function DrawingApp({onComplete}: StageProps) {
 			const lastLineIndex = prevLines.length - 1;
 			if (lastLineIndex < 0) return prevLines;
 			const lastLine = prevLines[lastLineIndex];
-			const newLine: LineData = { ...lastLine, points: [...lastLine.points, point] };
-			return [...prevLines.slice(0, lastLineIndex), newLine];
+			const newPoints: Point[] = [...lastLine.points, point];
+			return [...prevLines.slice(0, lastLineIndex), { ...lastLine, points: newPoints }];
 		};
-
+        
 		setLines(updateLines);
         setCurrentLines(updateLines);
 
 	}, [getPointerPosition]);
 
+    /**
+	 * マウス・タッチ終了時の処理
+	 */
 	const handleMouseUp = useCallback(() => {
 		isDrawing.current = false;
 
@@ -178,8 +236,7 @@ function DrawingApp({onComplete}: StageProps) {
 			const lastLineIndex = prevLines.length - 1;
 			if (lastLineIndex < 0) return prevLines;
 			const lastLine = prevLines[lastLineIndex];
-            
-			// 描画終了時にtargetPointsを計算
+			
 			const targetPoints = calculateTargetPoints(lastLine.points);
 
 			const newLine: LineData = {
@@ -190,7 +247,7 @@ function DrawingApp({onComplete}: StageProps) {
 		});
 	}, [calculateTargetPoints]);
     
-	// --- アニメーションロジック（前回の実装を継承） ---
+	// --- 6. アニメーションロジック (変更なし) ---
 
 	const animateLines = useCallback((timestamp: number) => {
 		if (!startTimeRef.current) startTimeRef.current = timestamp;
@@ -218,7 +275,6 @@ function DrawingApp({onComplete}: StageProps) {
 			animationRef.current = requestAnimationFrame(animateLines);
 		} else {
 			startTimeRef.current = undefined;
-			// 移動後のラインを lines (マスターデータ)に反映
 			setLines(newCurrentLines.map(line => ({ 
                 ...line, 
                 points: line.targetPoints, 
@@ -241,7 +297,7 @@ function DrawingApp({onComplete}: StageProps) {
 		};
 	}, [lines, animateLines]);
 
-    // points配列を 'x1,y1 x2,y2 ...' 形式の文字列に変換するヘルパー
+
     const pointsToSvgString = (points: Point[]): string => {
         return points.map(p => `${p.x},${p.y}`).join(' ');
     };
@@ -250,39 +306,48 @@ function DrawingApp({onComplete}: StageProps) {
 		<div
 			ref={stageRef}
 			style={{
-				width: stageSize,
-				height: stageSize,
-				margin: 'auto', 
-				position: 'relative',
-				border: '1px solid #ccc',
+				width: stageWidth,
+				height: stageHeight,
+				margin: 0,
+				position: 'fixed',
+                top: 0,
+                left: 0,
 				overflow: 'hidden',
 				touchAction: 'none', 
 			}}
 			onMouseDown={handleMouseDown}
 			onMouseMove={handleMouseMove}
 			onMouseUp={handleMouseUp}
-			onTouchStart={handleMouseDown as any}
-			onTouchMove={handleMouseMove as any}
+			onTouchStart={handleMouseDown}
+			onTouchMove={handleMouseMove}
 			onTouchEnd={handleMouseUp}
 		>
-            {/* 1. 背景のSVG (模倣対象) - ビューボックスを使用 */}
-			<svg width={stageSize} height={stageSize} viewBox={`0 0 ${VIEWSBOX_SIZE} ${VIEWSBOX_SIZE}`} style={{ position: 'absolute' }}>
-				{/* BACKGROUND_SVG_PATH_Dは VIEWSBOX_SIZE の座標系で定義されていることを前提とする */}
-				<path 
-                    d={BACKGROUND_SVG_PATH_D} 
-                    fill="none" 
-                    stroke="black" 
-                    strokeWidth="5" 
-                    opacity="0.2"
-                />
-			</svg>
+            {/* 1. 背景のSVG (模倣対象) */}
+			{backgroundPathD && (
+                <svg 
+                    width={stageWidth} 
+                    height={stageHeight} 
+                    viewBox={`0 0 ${viewBoxSize} ${viewBoxSize}`} 
+                    style={{ position: 'absolute' }}
+                    preserveAspectRatio="xMidYMid meet" 
+                >
+                    <path 
+                        d={backgroundPathD} 
+                        fill="none" 
+                        stroke="white" 
+                        strokeWidth="5" 
+                        opacity="0.2"
+                    />
+                </svg>
+			)}
 
-            {/* 2. ユーザーの描画 (アニメーション表示用) - ビューボックスを使用 */}
-            <svg width={stageSize} height={stageSize} viewBox={`0 0 ${VIEWSBOX_SIZE} ${VIEWSBOX_SIZE}`} style={{ position: 'absolute', top: 0, left: 0 }}>
+            {/* 2. ユーザーの描画 (アニメーション表示用) */}
+            <svg width={stageWidth} height={stageHeight} viewBox={`0 0 ${viewBoxSize} ${viewBoxSize}`} style={{ position: 'absolute', top: 0, left: 0 }}
+                 preserveAspectRatio="xMidYMid meet"
+            >
                 {currentLines.map((line) => (
                     <polyline
                         key={line.id}
-                        // 描画はビューボックス座標系で行われる
                         points={pointsToSvgString(line.points.map(scaleToViewBox))} 
                         fill="none"
                         stroke="#FF4500" 
@@ -296,7 +361,7 @@ function DrawingApp({onComplete}: StageProps) {
 			<button
 				type="submit"
 				onClick={onComplete}
-                style={{ position: 'absolute', bottom: 10, left: 10 }}
+                style={{ position: 'fixed', bottom: 10, left: 10 }}
 			>
 			完了 (onComplete)
 			</button>
