@@ -18,7 +18,7 @@ const useAudioSequencer = (currentAudioUrl: string | null) => {
     // AudioContextの初期化
     useEffect(() => {
         if (typeof globalThis !== 'undefined' && !contextRef.current) {
-            contextRef.current = new (globalThis.AudioContext || (globalThis as any).webkitAudioContext)();
+            contextRef.current = new (globalThis.AudioContext)();
         }
     }, []);
 
