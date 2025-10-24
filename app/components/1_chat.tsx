@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect, KeyboardEvent, useCallback } from 'react';
 import { StageProps } from '../ctrl/page.tsx';
 import init, { chat } from '../../rust-wasm/pkg/rust_wasm.js';
+import useAudioSequencer from './useAudioSequencer.ts';
 
 const FirstChat: React.FC<StageProps> = ({ onComplete }) => {
 	return(
@@ -10,8 +11,23 @@ const FirstChat: React.FC<StageProps> = ({ onComplete }) => {
 	)
 };
 
-
 export default FirstChat;
+
+const BGM_MAP: {[key:number]:string } = {
+	1: '/audio/001.wav',
+	2: '/audio/002.wav',
+	3: '/audio/003.wav',
+}
+
+const getBgmUrl = (times: number): string | null => {
+	const stages = Object.keys(BGM_MAP).map(Number).sort((a,b) => b - a);
+	for (const stage of stages) {
+		if (times >= stage) {
+			return BGM_MAP[stage];
+		}
+	}
+	return null;
+}
 
 interface Message {
 	id: number;
@@ -90,6 +106,7 @@ const MessageInput: React.FC<{ onSend: (text: string) => void }> = ({ onSend }) 
 		fontWeight: 'bold',
 	};
 
+
 	return (
 		<div style={{ padding: '15px', backgroundColor: '#f9fafb', display: 'flex', alignItems: 'center' }}>
 		<input
@@ -119,6 +136,12 @@ function ChatPage({onComplete}:StageProps) {
 	const [ dict, setDict ] = useState<Uint8Array|undefined>(undefined);
 	const messagesEndRef = useRef<HTMLDivElement>(null);
 	const dictPath = '/system.dic.zst';
+	
+	// for audio
+    const talktimesRef = useRef(1);
+    const [currentTalktimes, setCurrentTalktimes] = useState(1);
+    const currentBgmUrl = getBgmUrl(currentTalktimes);
+    const { isPlaying, isSwitching, endLoopAndAwaitCompletion } = useAudioSequencer(currentBgmUrl);
 
 	useEffect(() => {
 		messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -136,9 +159,7 @@ function ChatPage({onComplete}:StageProps) {
 		init();
 	}, []);
 
-	let talktimes = 1;
-
-	const handleSendMessage = useCallback((text: string) => {
+	const handleSendMessage = useCallback(async (text: string) => {
 		if (text.trim() === '') return;
 
 		const newUserMessage: Message = {
@@ -154,11 +175,18 @@ function ChatPage({onComplete}:StageProps) {
 			sender: 'ai',
 		};
 		setMessages((prev) => [...prev, aiResponse]);
-		talktimes += 1;
-		if(talktimes >= 5){ 
+
+		talktimesRef.current += 1;
+
+		// termination condition
+		if(talktimesRef.current >= 4){ 
+			await endLoopAndAwaitCompletion();
 			onComplete();
+			return;
 		}
-	}, [dict, onComplete]);
+		setCurrentTalktimes(talktimesRef.current);
+
+	}, [dict, onComplete, endLoopAndAwaitCompletion]);
 
 	const pageContainerStyle: React.CSSProperties = {
 		display: 'flex',
@@ -184,6 +212,27 @@ function ChatPage({onComplete}:StageProps) {
 		padding: '15px',
 		overflowY: 'auto', // スクロール可能にする
 	};
+
+	// for audio
+	
+	useEffect(() => {
+		messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+	}, [messages]);
+
+	useEffect(() => {
+		const loadData = async () => {
+			const loadedDict = await LoadDict(dictPath);
+			setDict(loadedDict);
+		}
+		loadData();
+	}, []);
+
+	useEffect(() => {
+		init();
+		setCurrentTalktimes(1);
+	}, []);
+
+	// function ChatPage's return
 
 	return (
 		<div style={pageContainerStyle}>

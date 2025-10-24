@@ -170,7 +170,7 @@ function DrawingApp({onComplete}: StageProps) {
         const snapping_distance_viewbox = SNAPPING_DISTANCE_PIXELS * (viewBoxSize / effectiveSize);
 
         // ⚠️ WASM呼び出し
-        const nearest_viewbox: NearestPointResult | null = find_nearest_point_on_path(
+        const nearest_viewbox: NearestPointResult | undefined = find_nearest_point_on_path(
             backgroundPathD, 
             p_viewbox.x, 
             p_viewbox.y,

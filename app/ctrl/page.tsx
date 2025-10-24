@@ -31,7 +31,6 @@ export default function Chat() {
 	}, []);
 
 	let StageComponent: React.ReactNode;
-	/*
 	switch (stage) {
 		case 1:
 			StageComponent = <FirstChat onComplete={handleStageComplete}/>;
@@ -42,8 +41,6 @@ export default function Chat() {
 		default:
 			StageComponent = <Error onComplete={handleStageComplete}/>;
 	}
-	*/
-   	StageComponent = <SecondDraw onComplete={handleStageComplete}/>;
 	const checkFullscreen = () => {
 		const isTargetFullscreen = document.fullscreenElement === pageRef.current;
 		setIsFullscreen(isTargetFullscreen);
