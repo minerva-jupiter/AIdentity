@@ -47,3 +47,6 @@ bun.lock
 # wasm
 /rust-wasm/target/
 !/rust-wasm/pkg/
+
+# Sentry Config File
+.env.sentry-build-plugin
