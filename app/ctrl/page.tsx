@@ -16,6 +16,9 @@ const FirstChat = dynamic<StageProps>(() => import('../components/1_chat.tsx'), 
 const SecondDraw = dynamic<StageProps>(() => import('../components/2_draw.tsx'), {
 	loading: Loading,
 });
+const ThreeVR = dynamic<StageProps>(()=>import('../components/3_vr.tsx'),{
+	loading: Loading,
+});
 const Error = dynamic<StageProps>(() => import('../components/error.tsx'), {
 	loading: Loading,
 });
@@ -30,6 +33,7 @@ export default function Chat() {
     	setStage(stage + 1);
 	}, []);
 
+	/*
 	let StageComponent: React.ReactNode;
 	switch (stage) {
 		case 1:
@@ -38,9 +42,17 @@ export default function Chat() {
 		case 2:
 			StageComponent = <SecondDraw onComplete={handleStageComplete}/>;
 			break;
+		case 3:
+			StageComponent = <ThreeVR onComplete={handleStageComplete}/>;
+			break;
 		default:
 			StageComponent = <Error onComplete={handleStageComplete}/>;
 	}
+	*/
+   //for debug
+	const StageComponent: React.ReactNode = <ThreeVR onComplete={handleStageComplete}/>;
+
+
 	const checkFullscreen = () => {
 		const isTargetFullscreen = document.fullscreenElement === pageRef.current;
 		setIsFullscreen(isTargetFullscreen);

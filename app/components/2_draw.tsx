@@ -3,6 +3,7 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import init, { find_nearest_point_on_path, NearestPointResult } from '../../rust-wasm/pkg/rust_wasm.js';
 import { StageProps } from '../ctrl/page.tsx';
+import useAudioSequencer from './useAudioSequencer.ts';
 
 type Tool = 'pen';
 type Point = { x: number; y: number; }; 
@@ -18,6 +19,21 @@ const BACKGROUND_SVG_PATH_D_DEFAULT = "";
 const VIEWSBOX_SIZE = 500; 
 const SNAPPING_DISTANCE_PIXELS = 30; 
 
+const BGM_MAP: {[key:number]:string } = {
+	1: '/audio/001.wav',
+	2: '/audio/002.wav',
+	3: '/audio/003.wav',
+}
+
+const getBgmUrl = (times: number): string | null => {
+	const stages = Object.keys(BGM_MAP).map(Number).sort((a,b) => b - a);
+	for (const stage of stages) {
+		if (times >= stage) {
+			return BGM_MAP[stage];
+		}
+	}
+	return null;
+}
 
 function DrawingApp({onComplete}: StageProps) {
 	const [isClient, setIsClient] = useState(false);
@@ -36,6 +52,11 @@ function DrawingApp({onComplete}: StageProps) {
 	const startTimeRef = useRef<number|undefined>(undefined);
 
 	const stageRef = useRef<HTMLDivElement>(null);
+
+	// for audio
+	const currentTalktimes = useState<number>(1);
+    const currentBgmUrl = getBgmUrl(1);
+    const { isPlaying, isSwitching, endLoopAndAwaitCompletion } = useAudioSequencer(currentBgmUrl);
 
 	useEffect(() => {
 		init();
@@ -301,70 +322,85 @@ function DrawingApp({onComplete}: StageProps) {
     const pointsToSvgString = (points: Point[]): string => {
         return points.map(p => `${p.x},${p.y}`).join(' ');
     };
-    
+
+	// for audio
+
+	useEffect(() => {
+		const handleAudioSequence = async () => {
+
+			await endLoopAndAwaitCompletion(); 
+
+			onComplete();
+		};
+		handleAudioSequence();
+
+		return
+
+	}, [currentBgmUrl, onComplete, endLoopAndAwaitCompletion]);
+
 	return (
 		<div
-			ref={stageRef}
-			style={{
-				width: stageWidth,
-				height: stageHeight,
-				margin: 0,
-				position: 'fixed',
-                top: 0,
-                left: 0,
-				overflow: 'hidden',
-				touchAction: 'none', 
-			}}
-			onMouseDown={handleMouseDown}
-			onMouseMove={handleMouseMove}
-			onMouseUp={handleMouseUp}
-			onTouchStart={handleMouseDown}
-			onTouchMove={handleMouseMove}
-			onTouchEnd={handleMouseUp}
+		ref={stageRef}
+		style={{
+			width: stageWidth,
+			height: stageHeight,
+			margin: 0,
+			position: 'fixed',
+			top: 0,
+			left: 0,
+			overflow: 'hidden',
+			touchAction: 'none', 
+		}}
+		onMouseDown={handleMouseDown}
+		onMouseMove={handleMouseMove}
+		onMouseUp={handleMouseUp}
+		onTouchStart={handleMouseDown}
+		onTouchMove={handleMouseMove}
+		onTouchEnd={handleMouseUp}
 		>
-            {/* 1. 背景のSVG (模倣対象) */}
-			{backgroundPathD && (
-                <svg 
-                    width={stageWidth} 
-                    height={stageHeight} 
-                    viewBox={`0 0 ${viewBoxSize} ${viewBoxSize}`} 
-                    style={{ position: 'absolute' }}
-                    preserveAspectRatio="xMidYMid meet" 
-                >
-                    <path 
-                        d={backgroundPathD} 
-                        fill="none" 
-                        stroke="white" 
-                        strokeWidth="5" 
-                        opacity="0.2"
-                    />
-                </svg>
-			)}
-
-            {/* 2. ユーザーの描画 (アニメーション表示用) */}
-            <svg width={stageWidth} height={stageHeight} viewBox={`0 0 ${viewBoxSize} ${viewBoxSize}`} style={{ position: 'absolute', top: 0, left: 0 }}
-                 preserveAspectRatio="xMidYMid meet"
-            >
-                {currentLines.map((line) => (
-                    <polyline
-                        key={line.id}
-                        points={pointsToSvgString(line.points.map(scaleToViewBox))} 
-                        fill="none"
-                        stroke="#FF4500" 
-                        strokeWidth="3"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                    />
-                ))}
-            </svg>
-
-			<button
-				type="submit"
-				onClick={onComplete}
-                style={{ position: 'fixed', bottom: 10, left: 10 }}
+		{/* 1. 背景のSVG (模倣対象) */}
+		{backgroundPathD && (
+			<svg 
+			width={stageWidth} 
+			height={stageHeight} 
+			viewBox={`0 0 ${viewBoxSize} ${viewBoxSize}`} 
+			style={{ position: 'absolute' }}
+			preserveAspectRatio="xMidYMid meet" 
 			>
-			完了 (onComplete)
-			</button>
+			<path 
+			d={backgroundPathD} 
+			fill="none" 
+			stroke="white" 
+			strokeWidth="5" 
+			opacity="0.2"
+			/>
+			</svg>
+		)}
+
+		{/* 2. ユーザーの描画 (アニメーション表示用) */}
+		<svg width={stageWidth} height={stageHeight} viewBox={`0 0 ${viewBoxSize} ${viewBoxSize}`} style={{ position: 'absolute', top: 0, left: 0 }}
+		preserveAspectRatio="xMidYMid meet"
+		>
+		{currentLines.map((line) => (
+			<polyline
+			key={line.id}
+			points={pointsToSvgString(line.points.map(scaleToViewBox))} 
+			fill="none"
+			stroke="#FF4500" 
+			strokeWidth="3"
+			strokeLinecap="round"
+			strokeLinejoin="round"
+			/>
+		))}
+		</svg>
+
+		<button
+		type="submit"
+		onClick={onComplete}
+		style={{ position: 'fixed', bottom: 10, left: 10 }}
+		>
+		完了 (onComplete)
+		</button>
 		</div>
 	);
 }
