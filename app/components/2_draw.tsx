@@ -3,14 +3,13 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import init, { find_nearest_point_on_path, NearestPointResult } from '../../rust-wasm/pkg/rust_wasm.js';
 import { StageProps } from '../ctrl/page.tsx';
-import useAudioSequencer from './useAudioSequencer.ts';
 
 type Tool = 'pen';
 type Point = { x: number; y: number; }; 
 
 interface LineData {
-    id: number;
-    tool: Tool;
+	id: number;
+	tool: Tool;
 	points: Point[];      
 	targetPoints: Point[]; 
 }
@@ -19,44 +18,25 @@ const BACKGROUND_SVG_PATH_D_DEFAULT = "";
 const VIEWSBOX_SIZE = 500; 
 const SNAPPING_DISTANCE_PIXELS = 30; 
 
-const BGM_MAP: {[key:number]:string } = {
-	1: '/audio/001.wav',
-	2: '/audio/002.wav',
-	3: '/audio/003.wav',
-}
+const AUDIO_SOURCE = '/audio/001.wav';
 
-const getBgmUrl = (times: number): string | null => {
-	const stages = Object.keys(BGM_MAP).map(Number).sort((a,b) => b - a);
-	for (const stage of stages) {
-		if (times >= stage) {
-			return BGM_MAP[stage];
-		}
-	}
-	return null;
-}
-
-function DrawingApp({onComplete}: StageProps) {
+export default function DrawingApp({onComplete}: StageProps) {
 	const [isClient, setIsClient] = useState(false);
-    const lineIdCounter = useRef(0);
+	const lineIdCounter = useRef(0);
 	const [lines, setLines] = useState<LineData[]>([]); 
 	const [currentLines, setCurrentLines] = useState<LineData[]>([]); 
 
-    const [stageWidth, setStageWidth] = useState(0);
-    const [stageHeight, setStageHeight] = useState(0);
-    const [backgroundPathD, setBackgroundPathD] = useState(BACKGROUND_SVG_PATH_D_DEFAULT); 
-    const [viewBoxSize, setViewBoxSize] = useState(VIEWSBOX_SIZE); 
-    
+	const [stageWidth, setStageWidth] = useState(0);
+	const [stageHeight, setStageHeight] = useState(0);
+	const [backgroundPathD, setBackgroundPathD] = useState(BACKGROUND_SVG_PATH_D_DEFAULT); 
+	const [viewBoxSize, setViewBoxSize] = useState(VIEWSBOX_SIZE); 
+
 	const isDrawing = useRef(false);
-	
+
 	const animationRef = useRef<number>(0);
 	const startTimeRef = useRef<number|undefined>(undefined);
 
 	const stageRef = useRef<HTMLDivElement>(null);
-
-	// for audio
-	const currentTalktimes = useState<number>(1);
-    const currentBgmUrl = getBgmUrl(1);
-    const { isPlaying, isSwitching, endLoopAndAwaitCompletion } = useAudioSequencer(currentBgmUrl);
 
 	useEffect(() => {
 		init();
@@ -65,7 +45,7 @@ function DrawingApp({onComplete}: StageProps) {
 	// --- 1. サイズ計算とステージ設定 (画面全体を使用) ---
 	useEffect(() => {
 		setIsClient(true);
-		
+
 		const handleResize = () => {
 			if (typeof globalThis !== 'undefined') {
 				setStageWidth(globalThis.innerWidth);
@@ -80,153 +60,153 @@ function DrawingApp({onComplete}: StageProps) {
 			globalThis.removeEventListener('resize', handleResize);
 		};
 	}, []);
-    
-    // --- 2. 座標変換ユーティリティ ---
-    
-    const scaleToViewBox = useCallback((p: Point): Point => {
-        if (stageWidth === 0 || stageHeight === 0) return p;
-        
-        const effectiveSize = Math.min(stageWidth, stageHeight);
-        const scale = viewBoxSize / effectiveSize;
 
-        const offsetX = (stageWidth - effectiveSize) / 2;
-        const offsetY = (stageHeight - effectiveSize) / 2;
+	// --- 2. 座標変換ユーティリティ ---
 
-        return {
-            x: (p.x - offsetX) * scale,
-            y: (p.y - offsetY) * scale,
-        };
-    }, [stageWidth, stageHeight, viewBoxSize]);
+	const scaleToViewBox = useCallback((p: Point): Point => {
+		if (stageWidth === 0 || stageHeight === 0) return p;
 
-    const scaleToScreen = useCallback((p: Point): Point => {
-        if (stageWidth === 0 || stageHeight === 0) return p;
+		const effectiveSize = Math.min(stageWidth, stageHeight);
+		const scale = viewBoxSize / effectiveSize;
 
-        const effectiveSize = Math.min(stageWidth, stageHeight);
-        const scale = effectiveSize / viewBoxSize;
-        
-        const offsetX = (stageWidth - effectiveSize) / 2;
-        const offsetY = (stageHeight - effectiveSize) / 2;
+		const offsetX = (stageWidth - effectiveSize) / 2;
+		const offsetY = (stageHeight - effectiveSize) / 2;
 
-        return {
-            x: p.x * scale + offsetX,
-            y: p.y * scale + offsetY,
-        };
-    }, [stageWidth, stageHeight, viewBoxSize]);
+		return {
+			x: (p.x - offsetX) * scale,
+			y: (p.y - offsetY) * scale,
+		};
+	}, [stageWidth, stageHeight, viewBoxSize]);
 
-    const getPointerPosition = useCallback((e: React.MouseEvent | React.TouchEvent | MouseEvent | TouchEvent): Point | null => {
+	const scaleToScreen = useCallback((p: Point): Point => {
+		if (stageWidth === 0 || stageHeight === 0) return p;
+
+		const effectiveSize = Math.min(stageWidth, stageHeight);
+		const scale = effectiveSize / viewBoxSize;
+
+		const offsetX = (stageWidth - effectiveSize) / 2;
+		const offsetY = (stageHeight - effectiveSize) / 2;
+
+		return {
+			x: p.x * scale + offsetX,
+			y: p.y * scale + offsetY,
+		};
+	}, [stageWidth, stageHeight, viewBoxSize]);
+
+	const getPointerPosition = useCallback((e: React.MouseEvent | React.TouchEvent | MouseEvent | TouchEvent): Point | null => {
 		if (!stageRef.current) return null;
 		const rect = stageRef.current.getBoundingClientRect();
-		
-        let clientX: number, clientY: number;
-        if ('touches' in e) {
-            if (e.touches.length === 0) return null;
-            clientX = e.touches[0].clientX;
-            clientY = e.touches[0].clientY;
-        } else {
-            clientX = e.clientX;
-            clientY = e.clientY;
-        }
+
+		let clientX: number, clientY: number;
+		if ('touches' in e) {
+			if (e.touches.length === 0) return null;
+			clientX = e.touches[0].clientX;
+			clientY = e.touches[0].clientY;
+		} else {
+			clientX = e.clientX;
+			clientY = e.clientY;
+		}
 
 		return { x: clientX - rect.left, y: clientY - rect.top };
 	}, []);
-    
-    // --- 3. SVGコンテンツの取得ロジック (DOMParser) ---
-    useEffect(() => {
-        const fetchAndParseSvg = async () => {
-            try {
-                const response = await fetch('/whiteperson.svg'); 
-                const svgText = await response.text();
 
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(svgText, "image/svg+xml");
-                
-                const svgElement = doc.querySelector('svg');
-                if (svgElement) {
-                    const viewBoxAttr = svgElement.getAttribute('viewBox');
-                    if (viewBoxAttr) {
-                        const parts = viewBoxAttr.trim().split(/\s+/);
-                        if (parts.length === 4) {
-                             const size = Math.max(parseFloat(parts[2]), parseFloat(parts[3]));
-                             if (!isNaN(size) && size > 0) {
-                                 setViewBoxSize(size);
-                             }
-                        }
-                    }
-                }
-                
-                const pathElements = doc.querySelectorAll('path');
-                let foundDValue = null;
+	// --- 3. SVGコンテンツの取得ロジック (DOMParser) ---
+	useEffect(() => {
+		const fetchAndParseSvg = async () => {
+			try {
+				const response = await fetch('/whiteperson.svg'); 
+				const svgText = await response.text();
 
-                for (const element of Array.from(pathElements)) {
-                    const dValue = element.getAttribute('d');
-                    if (dValue && dValue.trim().length > 0) {
-                        foundDValue = dValue;
-                        break; 
-                    }
-                }
+				const parser = new DOMParser();
+				const doc = parser.parseFromString(svgText, "image/svg+xml");
 
-                if (foundDValue) {
-                    setBackgroundPathD(foundDValue);
-                    return; 
-                }
-                
-                console.error("Error: <path> element or 'd' attribute not found in whiteperson.svg.");
+				const svgElement = doc.querySelector('svg');
+				if (svgElement) {
+					const viewBoxAttr = svgElement.getAttribute('viewBox');
+					if (viewBoxAttr) {
+						const parts = viewBoxAttr.trim().split(/\s+/);
+						if (parts.length === 4) {
+							const size = Math.max(parseFloat(parts[2]), parseFloat(parts[3]));
+							if (!isNaN(size) && size > 0) {
+								setViewBoxSize(size);
+							}
+						}
+					}
+				}
 
-            } catch (error) {
-                console.error("Failed to load or parse whiteperson.svg:", error);
-            }
-        };
+				const pathElements = doc.querySelectorAll('path');
+				let foundDValue = null;
 
-        if (isClient && backgroundPathD === "") { 
-             fetchAndParseSvg();
-        }
-    }, [isClient, backgroundPathD]);
+				for (const element of Array.from(pathElements)) {
+					const dValue = element.getAttribute('d');
+					if (dValue && dValue.trim().length > 0) {
+						foundDValue = dValue;
+						break; 
+					}
+				}
+
+				if (foundDValue) {
+					setBackgroundPathD(foundDValue);
+					return; 
+				}
+
+				console.error("Error: <path> element or 'd' attribute not found in whiteperson.svg.");
+
+			} catch (error) {
+				console.error("Failed to load or parse whiteperson.svg:", error);
+			}
+		};
+
+		if (isClient && backgroundPathD === "") { 
+			fetchAndParseSvg();
+		}
+	}, [isClient, backgroundPathD]);
 
 
-    // --- 4. 吸着ロジック (WASM呼び出し) ---
-    const calculateNearestTargetPoint = useCallback((p: Point): Point => {
-        const p_viewbox = scaleToViewBox(p);
-        
-        const effectiveSize = Math.min(stageWidth, stageHeight);
-        const snapping_distance_viewbox = SNAPPING_DISTANCE_PIXELS * (viewBoxSize / effectiveSize);
+	// --- 4. 吸着ロジック (WASM呼び出し) ---
+	const calculateNearestTargetPoint = useCallback((p: Point): Point => {
+		const p_viewbox = scaleToViewBox(p);
 
-        // ⚠️ WASM呼び出し
-        const nearest_viewbox: NearestPointResult | undefined = find_nearest_point_on_path(
-            backgroundPathD, 
-            p_viewbox.x, 
-            p_viewbox.y,
-            snapping_distance_viewbox
-        );
+		const effectiveSize = Math.min(stageWidth, stageHeight);
+		const snapping_distance_viewbox = SNAPPING_DISTANCE_PIXELS * (viewBoxSize / effectiveSize);
+
+		// ⚠️ WASM呼び出し
+		const nearest_viewbox: NearestPointResult | undefined = find_nearest_point_on_path(
+			backgroundPathD, 
+			p_viewbox.x, 
+			p_viewbox.y,
+			snapping_distance_viewbox
+		);
 		console.log("nearest_viewbox is ",nearest_viewbox);
 
-        if (nearest_viewbox) {
-            return scaleToScreen(nearest_viewbox);
-        }
-        return p; 
-    }, [scaleToViewBox, scaleToScreen, stageWidth, stageHeight, viewBoxSize, backgroundPathD]); 
+		if (nearest_viewbox) {
+			return scaleToScreen(nearest_viewbox);
+		}
+		return p; 
+	}, [scaleToViewBox, scaleToScreen, stageWidth, stageHeight, viewBoxSize, backgroundPathD]); 
 
 	const calculateTargetPoints = useCallback((points: Point[]): Point[] => {
-        return points.map(p => calculateNearestTargetPoint(p));
+		return points.map(p => calculateNearestTargetPoint(p));
 	}, [calculateNearestTargetPoint]);
 
 
-    // --- 5. イベントハンドラ (吹き飛んでいた部分を再定義) ---
+	// --- 5. イベントハンドラ (吹き飛んでいた部分を再定義) ---
 
-    /**
+	/**
 	 * マウス・タッチ開始時の処理
 	 */
-    const handleMouseDown = useCallback((e: React.MouseEvent | React.TouchEvent) => {
+	const handleMouseDown = useCallback((e: React.MouseEvent | React.TouchEvent) => {
 		isDrawing.current = true;
 		const pos = getPointerPosition(e);
 		if (pos) {
-            lineIdCounter.current += 1;
-            const newLine: LineData = { id: lineIdCounter.current, tool: 'pen', points: [pos], targetPoints: [] };
+			lineIdCounter.current += 1;
+			const newLine: LineData = { id: lineIdCounter.current, tool: 'pen', points: [pos], targetPoints: [] };
 			setLines(prev => [...prev, newLine]);
-            setCurrentLines(prev => [...prev, newLine]);
+			setCurrentLines(prev => [...prev, newLine]);
 		}
 	}, [getPointerPosition]); 
 
-    /**
+	/**
 	 * マウス・タッチ移動時の処理
 	 */
 	const handleMouseMove = useCallback((e: React.MouseEvent | React.TouchEvent) => {
@@ -241,13 +221,13 @@ function DrawingApp({onComplete}: StageProps) {
 			const newPoints: Point[] = [...lastLine.points, point];
 			return [...prevLines.slice(0, lastLineIndex), { ...lastLine, points: newPoints }];
 		};
-        
+
 		setLines(updateLines);
-        setCurrentLines(updateLines);
+		setCurrentLines(updateLines);
 
 	}, [getPointerPosition]);
 
-    /**
+	/**
 	 * マウス・タッチ終了時の処理
 	 */
 	const handleMouseUp = useCallback(() => {
@@ -257,7 +237,7 @@ function DrawingApp({onComplete}: StageProps) {
 			const lastLineIndex = prevLines.length - 1;
 			if (lastLineIndex < 0) return prevLines;
 			const lastLine = prevLines[lastLineIndex];
-			
+
 			const targetPoints = calculateTargetPoints(lastLine.points);
 
 			const newLine: LineData = {
@@ -267,7 +247,7 @@ function DrawingApp({onComplete}: StageProps) {
 			return [...prevLines.slice(0, lastLineIndex), newLine];
 		});
 	}, [calculateTargetPoints]);
-    
+
 	// --- 6. アニメーションロジック (変更なし) ---
 
 	const animateLines = useCallback((timestamp: number) => {
@@ -280,11 +260,11 @@ function DrawingApp({onComplete}: StageProps) {
 			if (line.targetPoints.length === 0) return line;
 
 			const newPoints: Point[] = line.points.map((originalP, index) => {
-                const targetP = line.targetPoints[index];
+				const targetP = line.targetPoints[index];
 				return {
-                    x: originalP.x + (targetP.x - originalP.x) * progress,
-                    y: originalP.y + (targetP.y - originalP.y) * progress,
-                };
+					x: originalP.x + (targetP.x - originalP.x) * progress,
+					y: originalP.y + (targetP.y - originalP.y) * progress,
+				};
 			});
 
 			return { ...line, points: newPoints };
@@ -297,10 +277,10 @@ function DrawingApp({onComplete}: StageProps) {
 		} else {
 			startTimeRef.current = undefined;
 			setLines(newCurrentLines.map(line => ({ 
-                ...line, 
-                points: line.targetPoints, 
-                targetPoints: [] 
-            }))); 
+				...line, 
+				points: line.targetPoints, 
+				targetPoints: [] 
+			}))); 
 		}
 	}, [lines]);
 
@@ -319,24 +299,46 @@ function DrawingApp({onComplete}: StageProps) {
 	}, [lines, animateLines]);
 
 
-    const pointsToSvgString = (points: Point[]): string => {
-        return points.map(p => `${p.x},${p.y}`).join(' ');
-    };
+	const pointsToSvgString = (points: Point[]): string => {
+		return points.map(p => `${p.x},${p.y}`).join(' ');
+	};
 
 	// for audio
+	const audioRef = useRef<HTMLAudioElement | null>(null);
 
 	useEffect(() => {
-		const handleAudioSequence = async () => {
+		init();
+	},[])
 
-			await endLoopAndAwaitCompletion(); 
+	useEffect(() => {
+		const audio = new Audio(AUDIO_SOURCE);
+		audioRef.current = audio;
 
+		const handleAudioEnded = () => {
+			console.log("Audio playback finished. Calling onComplete.");
 			onComplete();
 		};
-		handleAudioSequence();
 
-		return
+		audio.addEventListener('ended', handleAudioEnded);
 
-	}, [currentBgmUrl, onComplete, endLoopAndAwaitCompletion]);
+		// ユーザーインタラクションの直後に再生を開始
+		// コンポーネントがロードされただけではブラウザの制限で再生できないため、
+		// ユーザーの最初の描画操作をトリガーとして再生を開始するのがより安全ですが、
+		// 今回はシンプルにロード時に再生を試みます。
+		const playAudio = () => {
+			audio.play().catch(e => console.log("Audio playback failed (may require user interaction):", e));
+		};
+
+		// ロード完了を待って再生を試みる
+		audio.oncanplaythrough = playAudio;
+
+		// アンマウント時のクリーンアップ
+		return () => {
+			audio.pause();
+			audio.removeEventListener('ended', handleAudioEnded);
+			audioRef.current = null;
+		};
+	}, [onComplete]);
 
 	return (
 		<div
@@ -405,8 +407,3 @@ function DrawingApp({onComplete}: StageProps) {
 	);
 }
 
-const SecondDraw: React.FC<StageProps> = (props) => {
-	return <DrawingApp {...props} />;
-};
-
-export default SecondDraw;

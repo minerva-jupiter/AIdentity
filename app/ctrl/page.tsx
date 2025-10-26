@@ -33,8 +33,8 @@ export default function Chat() {
     	setStage(stage + 1);
 	}, []);
 
-	/*
 	let StageComponent: React.ReactNode;
+	console.log("now, stage is ",stage);
 	switch (stage) {
 		case 1:
 			StageComponent = <FirstChat onComplete={handleStageComplete}/>;
@@ -48,19 +48,11 @@ export default function Chat() {
 		default:
 			StageComponent = <Error onComplete={handleStageComplete}/>;
 	}
-	*/
-   //for debug
-	const StageComponent: React.ReactNode = <ThreeVR onComplete={handleStageComplete}/>;
-
 
 	const checkFullscreen = () => {
 		const isTargetFullscreen = document.fullscreenElement === pageRef.current;
 		setIsFullscreen(isTargetFullscreen);
 	};
-
-//	const checkStage = () => {
-//		const stage;
-//	};
 
 	useEffect(() => {
 		// for fullscreen
