@@ -19,6 +19,9 @@ const SecondDraw = dynamic<StageProps>(() => import('../components/2_draw.tsx'),
 const ThreeVR = dynamic<StageProps>(()=>import('../components/3_vr.tsx'),{
 	loading: Loading,
 });
+const OilArt = dynamic<StageProps>(()=>import('../components/4_oil.tsx'),{
+	loading: Loading,
+});
 const Error = dynamic<StageProps>(() => import('../components/error.tsx'), {
 	loading: Loading,
 });
@@ -28,7 +31,7 @@ export default function Chat() {
 	const pageRef = useRef<HTMLDivElement>(null);
 	const [isFullscreen, setIsFullscreen] = useState(false);
 	const [isInitialCheckDone, setIsInitialCheckDone] = useState(false);
-	const [ stage, setStage ] = useState(1);
+	const [ stage, setStage ] = useState(4);
 	const handleStageComplete = useCallback(() => {
     	setStage(stage + 1);
 	}, []);
@@ -44,6 +47,9 @@ export default function Chat() {
 			break;
 		case 3:
 			StageComponent = <ThreeVR onComplete={handleStageComplete}/>;
+			break;
+		case 4:
+			StageComponent = <OilArt onComplete={handleStageComplete}/>
 			break;
 		default:
 			StageComponent = <Error onComplete={handleStageComplete}/>;
