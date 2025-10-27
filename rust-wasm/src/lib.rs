@@ -3,6 +3,39 @@ use vibrato::{Dictionary, Tokenizer};
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
+pub fn chat2(dict_data: &[u8], input: &str) -> Result<String, JsValue> {
+    let encoded = Cursor::new(dict_data);
+    let reader = zstd::Decoder::new(encoded).unwrap();
+    let dict = Dictionary::read(reader)
+        .map_err(|_|{JsValue::from(js_sys::Error::new("Dictionary road Error"))})?;
+    let tokenizer = Tokenizer::new(dict);
+    let mut worker = tokenizer.new_worker();
+
+    worker.reset_sentence(input);
+    worker.tokenize();
+
+    let mut ans : String= "どうせ失敗する。当たり前だ。そうに決まっている。".to_string();
+
+    match worker.num_tokens() {
+        1..5 => {
+            ans = "は？".to_string();
+        },
+        5..9 => {
+            ans = "期待した私が馬鹿だったの？".to_string();
+        },
+        9 => {
+            ans = "お前のせいで私の人生がめちゃくちゃだ。".to_string();
+        },
+        10..=usize::MAX => {
+            ans = "どうでもいいわ。勝手にすれば。私には関係ない。".to_string();
+        }
+        _ => {ans = "どうでもいいわ。勝手にすれば。私には関係ない。".to_string();},
+    }
+
+    Ok(ans)
+}
+
+#[wasm_bindgen]
 pub fn chat(dict_data: &[u8], input: &str) -> Result<String, JsValue> {
     let encoded = Cursor::new(dict_data);
     let reader = zstd::Decoder::new(encoded).unwrap();

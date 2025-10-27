@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect, KeyboardEvent, useCallback } from 'react';
 import { StageProps } from '../ctrl/page.tsx';
-import init, { chat } from '../../rust-wasm/pkg/rust_wasm.js';
+import init, { chat2 } from '../../rust-wasm/pkg/rust_wasm.js';
 
 // useWebAudioControllerの代替となるカスタムフックを定義
 const useAudioPlayback = (
@@ -130,8 +130,7 @@ const useAudioPlayback = (
 	}
 
 	const initialMessages: Message[] = [
-		{ id: 1, text: 'そろそろどうするか決めないとだよ？', sender: 'ai' },
-		{ id: 2, text: 'はやく話して。', sender:'ai'},
+		{ id: 1, text: 'どうせ私のこと、うっさいな死ねよくらいに思ってんでしょ？', sender: 'ai' },
 	];
 
 	const MessageBubble: React.FC<{ message: Message }> = ({ message }) => {
@@ -261,7 +260,7 @@ const useAudioPlayback = (
 				sender: 'user',
 			};
 			setMessages((prev) => [...prev, newUserMessage]);
-			const ans = dict == undefined ? 'もっとマシなことを言いなさい。' : chat(dict, text);
+			const ans = dict == undefined ? 'みんなはもうできてるのに、なんでできないの？' : chat2(dict, text);
 			const aiResponse: Message = {
 				id: Date.now() + 1,
 				text: ans,

@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+export function chat2(dict_data: Uint8Array, input: string): string;
 export function chat(dict_data: Uint8Array, input: string): string;
 /**
  *
@@ -20,6 +21,7 @@ export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembl
 
 export interface InitOutput {
   readonly memory: WebAssembly.Memory;
+  readonly chat2: (a: number, b: number, c: number, d: number) => [number, number, number, number];
   readonly chat: (a: number, b: number, c: number, d: number) => [number, number, number, number];
   readonly __wbg_nearestpointresult_free: (a: number, b: number) => void;
   readonly __wbg_get_nearestpointresult_x: (a: number) => number;

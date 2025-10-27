@@ -1,0 +1,20 @@
+/* 背景のチカチカ */
+@keyframes background-flicker {
+  0%, 100% { background-color: #000; } /* 黒 */
+  10%, 30%, 50%, 70%, 90% { background-color: #fff; } /* 白 */
+  20%, 40%, 60%, 80% { background-color: #000; }
+}
+
+.flicker-background {
+  animation: background-flicker 0.1s infinite step-end; /* 高速で不連続な点滅 */
+}
+
+/* 文字のチカチカ */
+@keyframes text-flicker {
+  0%, 100% { color: #fff; text-shadow: 0 0 5px rgba(255, 255, 255, 0.5); }
+  50% { color: #f00; text-shadow: none; } /* 赤く光らせたり、消したり */
+}
+
+.flicker-text {
+  animation: text-flicker 0.05s infinite step-end;
+}

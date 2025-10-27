@@ -1,4 +1,23 @@
+'use client'
 
+import { useEffect, useState } from "react";
+import { isWasmSupported } from "./components/wasmCheck.ts";
+
+const WasmCheck: React.FC = () => {
+	const [isSupported, setIsSupported] = useState<boolean | null>(null);
+	useEffect(()=>{
+		setIsSupported(isWasmSupported());
+	},[]);
+	if (isSupported === null){
+		return null;
+	}
+	if (isSupported === false){
+		return (
+			<h3>WASMがサポートされていません。</h3>
+		);
+	}
+	return null;
+}
 export default function Home() {
 	return (
 		<main style={{paddingTop: "5rem", paddingLeft: "20vw", maxWidth: "60vw"}}>
@@ -27,6 +46,11 @@ export default function Home() {
 				<ul>
 					<li>音が出ます。</li>
 					<li>フルスクリーンを要求します。</li>
+					<li>JavaScript及びWASMを使用します。有効になっているか確認してください。</li>
+					<noscript>
+					JavaScriptが無効です。
+					</noscript>
+					<WasmCheck/>
 				</ul>
 			</article>
 		</main>

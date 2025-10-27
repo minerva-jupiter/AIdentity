@@ -1,6 +1,7 @@
 /* tslint:disable */
 /* eslint-disable */
 export const memory: WebAssembly.Memory;
+export const chat2: (a: number, b: number, c: number, d: number) => [number, number, number, number];
 export const chat: (a: number, b: number, c: number, d: number) => [number, number, number, number];
 export const __wbg_nearestpointresult_free: (a: number, b: number) => void;
 export const __wbg_get_nearestpointresult_x: (a: number) => number;

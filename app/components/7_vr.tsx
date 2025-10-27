@@ -9,7 +9,6 @@ import { StageProps } from '../ctrl/page.tsx';
 
 // --- オーディオ関連の定数とカスタムフック ---
 const AUDIO_SOURCES: Record<number, string> = {
-    1: '/audio/001.wav',
     2: '/audio/002.wav',
 };
 
@@ -203,7 +202,7 @@ function RandomClouds({ count, radius, height, sceneState }: RandomCloudsProps) 
 
 export default function ThreeVR({onComplete}:StageProps) {
     // 💡 状態定義: number型
-    const sceneState = useSequentialAudio(1, AUDIO_SOURCES, onComplete);
+    const sceneState = useSequentialAudio(2, AUDIO_SOURCES, onComplete);
 
     return (
             <Canvas 
@@ -211,7 +210,7 @@ export default function ThreeVR({onComplete}:StageProps) {
                 camera={{ position: [5, 5, 5], fov: 60 }}
                 shadows 
                 // 霧の状態によってクリアカラー（背景色）を変える
-                style={{ background: sceneState === 2 ? '#85555B' : '#d0e0ff' }}
+                style={{ background: sceneState === 2 ? '#050507' : '#d0e0ff' }}
             >
                 <AnimatedSky sceneState={sceneState}/>
                 

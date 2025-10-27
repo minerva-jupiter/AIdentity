@@ -22,16 +22,28 @@ const ThreeVR = dynamic<StageProps>(()=>import('../components/3_vr.tsx'),{
 const OilArt = dynamic<StageProps>(()=>import('../components/4_oil.tsx'),{
 	loading: Loading,
 });
+const FifthTitle = dynamic<StageProps>(()=>import('../components/5_title.tsx'),{
+	loading: Loading,
+});
+const SixthChat = dynamic<StageProps>(()=>import('../components/6_chat.tsx'),{
+	loading: Loading,
+});
+const SeventhVR = dynamic<StageProps>(()=>import('../components/7_vr.tsx'),{
+	loading: Loading,
+});
+const EighthLightActivity = dynamic<StageProps>(()=>import('../components/8_lightactivity.tsx'),{
+	loading: Loading,
+});
 const Error = dynamic<StageProps>(() => import('../components/error.tsx'), {
 	loading: Loading,
 });
 
-export default function Chat() {
+export default function Play() {
 
 	const pageRef = useRef<HTMLDivElement>(null);
 	const [isFullscreen, setIsFullscreen] = useState(false);
 	const [isInitialCheckDone, setIsInitialCheckDone] = useState(false);
-	const [ stage, setStage ] = useState(4);
+	const [ stage, setStage ] = useState(8);
 	const handleStageComplete = useCallback(() => {
     	setStage(stage + 1);
 	}, []);
@@ -50,6 +62,18 @@ export default function Chat() {
 			break;
 		case 4:
 			StageComponent = <OilArt onComplete={handleStageComplete}/>
+			break;
+		case 5:
+			StageComponent = <FifthTitle onComplete={handleStageComplete}/>
+			break;
+		case 6:
+			StageComponent = <SixthChat onComplete={handleStageComplete}/>
+			break;
+		case 7:
+			StageComponent = <SeventhVR onComplete={handleStageComplete}/>
+			break;
+		case 8:
+			StageComponent = <EighthLightActivity onComplete={handleStageComplete}/>
 			break;
 		default:
 			StageComponent = <Error onComplete={handleStageComplete}/>;
@@ -101,7 +125,7 @@ export default function Chat() {
 	}
 
 	return (
-		<div ref={pageRef} style={{ height: '100vh', width: '100vw' }}>
+		<main ref={pageRef} style={{ height: '100vh', width: '100vw' }}>
 		{
 			!isFullscreen ? (
 				<article style={{height: '100%',width: '100%', alignItems:'center', justifyContent:'center', display:'flex'}}>
@@ -111,7 +135,7 @@ export default function Chat() {
 			StageComponent
 			)
 		}
-		</div>
+		</main>
 	);
 };
 
