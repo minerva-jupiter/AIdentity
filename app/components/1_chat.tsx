@@ -261,7 +261,10 @@ const useAudioPlayback = (
 				sender: 'user',
 			};
 			setMessages((prev) => [...prev, newUserMessage]);
-			const ans = dict == undefined ? 'もっとマシなことを言いなさい。' : chat(dict, text);
+			let ans = dict == undefined ? 'もっとマシなことを言いなさい。' : chat(dict, text);
+			if(messages[messages.length - 1].text === ans){
+				ans = 'は？';
+			};
 			const aiResponse: Message = {
 				id: Date.now() + 1,
 				text: ans,

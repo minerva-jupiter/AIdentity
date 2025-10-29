@@ -171,9 +171,21 @@ import * as THREE from 'three';
 // -----------------------------------------------------------
 // (上記2.の vertexShader と fragmentShader をここに定義またはインポート)
 
-// -----------------------------------------------------------
-// カスタムマテリアルの定義と拡張 (型定義は src/types/OilArtMaterial.d.ts に依存)
-// -----------------------------------------------------------
+// 1. OilArtMaterial クラスのカスタムユニフォームプロパティ
+interface OilArtUniforms {
+  u_time?: number;
+  u_resolution?: THREE.Vector2;
+  u_dropPosition?: THREE.Vector2;
+  u_dropColor?: THREE.Color;
+  u_dropRadius?: number;
+  u_tiltDirection?: THREE.Vector2;
+  u_feedbackTexture?: THREE.Texture | null;
+}
+
+// 3. OilArtMaterialRef のエクスポート型定義
+// THREE.ShaderMaterial を拡張した型を定義
+export type OilArtMaterialRef = THREE.ShaderMaterial & OilArtUniforms;
+
 const OilArtMaterial = shaderMaterial(
 	{
 		u_time: 0,
@@ -200,8 +212,6 @@ export interface OilArtAPI {
 interface OilArtPlaneProps {
 	onTriggerAPI: (api: OilArtAPI) => void;
 }
-
-type OilArtMaterialRef = THREE.ShaderMaterial & typeof OilArtMaterial.prototype;
 
 // -----------------------------------------------------------
 // OilArtPlane 本体
