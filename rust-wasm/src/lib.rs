@@ -1,74 +1,69 @@
-use std::{io:: Cursor, iter::Peekable, str::SplitWhitespace, usize};
+use rand::Rng;
+use std::{io::Cursor, iter::Peekable, str::SplitWhitespace, usize};
 use vibrato::{Dictionary, Tokenizer};
 use wasm_bindgen::prelude::*;
-
-#[wasm_bindgen]
-pub fn chat2(dict_data: &[u8], input: &str) -> Result<String, JsValue> {
-    let encoded = Cursor::new(dict_data);
-    let reader = zstd::Decoder::new(encoded).unwrap();
-    let dict = Dictionary::read(reader)
-        .map_err(|_|{JsValue::from(js_sys::Error::new("Dictionary road Error"))})?;
-    let tokenizer = Tokenizer::new(dict);
-    let mut worker = tokenizer.new_worker();
-
-    worker.reset_sentence(input);
-    worker.tokenize();
-
-    let mut ans : String= "どうせ失敗する。当たり前だ。そうに決まっている。".to_string();
-
-    match worker.num_tokens() {
-        1..5 => {
-            ans = "は？".to_string();
-        },
-        5..9 => {
-            ans = "期待した私が馬鹿だったの？".to_string();
-        },
-        9 => {
-            ans = "お前のせいで私の人生がめちゃくちゃだ。".to_string();
-        },
-        10..=usize::MAX => {
-            ans = "どうでもいいわ。勝手にすれば。私には関係ない。".to_string();
-        }
-        _ => {ans = "どうでもいいわ。勝手にすれば。私には関係ない。".to_string();},
-    }
-
-    Ok(ans)
-}
 
 #[wasm_bindgen]
 pub fn chat(dict_data: &[u8], input: &str) -> Result<String, JsValue> {
     let encoded = Cursor::new(dict_data);
     let reader = zstd::Decoder::new(encoded).unwrap();
     let dict = Dictionary::read(reader)
-        .map_err(|_|{JsValue::from(js_sys::Error::new("Dictionary road Error"))})?;
+        .map_err(|_| JsValue::from(js_sys::Error::new("Dictionary road Error")))?;
     let tokenizer = Tokenizer::new(dict);
     let mut worker = tokenizer.new_worker();
+    let mut rng = rand::rng();
+    let random_number = rng.random_range(1..=2);
 
     worker.reset_sentence(input);
     worker.tokenize();
 
-    let mut ans : String= "馬鹿なことを言ってないで。".to_string();
+    let mut ans: String = if random_number == 1 {
+        "どうせ失敗する。当たり前だ。そうに決まっている。".to_string()
+    } else {
+        "馬鹿なことを言ってないで。".to_string()
+    };
 
     match worker.num_tokens() {
         1..5 => {
-            ans = "何を言っているの？".to_string();
-        },
-        5..10 => {
-            ans = "そんなことができるわけないじゃない？".to_string();
-        },
-        10..=usize::MAX => {
-            ans = "そんなこと思ってるんじゃないんでしょ？".to_string();
+            ans = if random_number == 1 {
+                "は？".to_string()
+            } else {
+                "何を言っているの？".to_string()
+            };
         }
-        _ => {ans = "意味がわからない。".to_string();},
+        5..9 => {
+            ans = if random_number == 1 {
+                "期待した私が馬鹿だったの？".to_string()
+            } else {
+                "そんなことができるわけないじゃない？".to_string()
+            };
+        }
+        9 => {
+            ans = if random_number == 1 {
+                "お前のせいで私の人生がめちゃくちゃだ。".to_string()
+            } else {
+                "そんなこと思ってるんじゃないんでしょ？".to_string()
+            };
+        }
+        10..=usize::MAX => {
+            ans = if random_number == 1 {
+                "どうでもいいわ。勝手にすれば。私には関係ない。".to_string()
+            } else {
+                "意味がわからない。".to_string()
+            };
+        }
+        _ => {
+            ans = "どうでもいいわ。勝手にすれば。私には関係ない。".to_string();
+        }
     }
 
     Ok(ans)
 }
 
-use kurbo::{Point, BezPath, ParamCurve, PathSeg, Vec2}; 
 use kurbo::ParamCurveNearest;
-use wasm_bindgen::JsValue;
+use kurbo::{BezPath, ParamCurve, PathSeg, Point, Vec2};
 use std::f64::consts::PI;
+use wasm_bindgen::JsValue;
 
 // TypeScriptのPoint型に対応する構造体を定義
 #[derive(Debug, Clone, Copy)]
@@ -84,10 +79,7 @@ pub struct NearestPointResult {
 
 /// ベクトルVを回転角度φだけ回転させます。（名前を rotate_vec2 に変更）
 fn rotate_vec2(v: Vec2, sin_phi: f64, cos_phi: f64) -> Vec2 {
-    Vec2::new(
-        v.x * cos_phi - v.y * sin_phi,
-        v.x * sin_phi + v.y * cos_phi,
-    )
+    Vec2::new(v.x * cos_phi - v.y * sin_phi, v.x * sin_phi + v.y * cos_phi)
 }
 
 /// 単一のArcセグメント（2つの角度間）をCubic Bezierに変換します。
@@ -100,7 +92,6 @@ fn segment_to_cubic(
     path: &mut BezPath,
     current_point: Point,
 ) -> Point {
-
     if delta_angle.abs() < 1e-6 {
         return current_point;
     }
@@ -114,14 +105,17 @@ fn segment_to_cubic(
 
     // Vec2として扱う
     let start_vec = Vec2::new(start_angle.cos() * a, start_angle.sin() * b);
-    let end_vec = Vec2::new((start_angle + delta_angle).cos() * a, (start_angle + delta_angle).sin() * b);
+    let end_vec = Vec2::new(
+        (start_angle + delta_angle).cos() * a,
+        (start_angle + delta_angle).sin() * b,
+    );
 
     // Vec2を回転
     let start_vec_rotated = rotate_vec2(start_vec, sin_phi, cos_phi);
     let end_vec_rotated = rotate_vec2(end_vec, sin_phi, cos_phi);
 
-    let p0 = center + start_vec_rotated; 
-    let p3 = center + end_vec_rotated;   
+    let p0 = center + start_vec_rotated;
+    let p3 = center + end_vec_rotated;
 
     // Vec2 を使ったタンジェント計算
     let t_start_vec = Vec2::new(-start_vec.y * t_factor, start_vec.x * t_factor);
@@ -138,7 +132,6 @@ fn segment_to_cubic(
     p3
 }
 
-
 /// SVG Arcコマンドを複数のCubic Bezierセグメントに分解します。
 fn arc_to_beziers(
     start_point: Point,
@@ -150,7 +143,6 @@ fn arc_to_beziers(
     end_point: Point,
     path: &mut BezPath,
 ) -> Point {
-
     if (rx.abs() < 1e-6 || ry.abs() < 1e-6) || start_point == end_point {
         path.line_to(end_point);
         return end_point;
@@ -165,11 +157,7 @@ fn arc_to_beziers(
 
     // Vec2を回転し、結果も Vec2
     let p_vec = (start_point - end_point) * 0.5;
-    let mut p_prime_vec = rotate_vec2(
-        p_vec,
-        -sin_phi, 
-        cos_phi,
-    );
+    let p_prime_vec = rotate_vec2(p_vec, -sin_phi, cos_phi);
     // Pointとして使うために一時的に変換
     let p_prime = Point::new(p_prime_vec.x, p_prime_vec.y);
 
@@ -185,22 +173,20 @@ fn arc_to_beziers(
     let x_prime_sq = p_prime.x * p_prime.x;
     let y_prime_sq = p_prime.y * p_prime.y;
 
-    let mut center_coeff = (
-        (rx_sq * ry_sq - rx_sq * y_prime_sq - ry_sq * x_prime_sq) /
-        (rx_sq * y_prime_sq + ry_sq * x_prime_sq)
-    ).max(0.0).sqrt(); 
+    let mut center_coeff = ((rx_sq * ry_sq - rx_sq * y_prime_sq - ry_sq * x_prime_sq)
+        / (rx_sq * y_prime_sq + ry_sq * x_prime_sq))
+        .max(0.0)
+        .sqrt();
 
     if large_arc_flag == sweep_flag {
         center_coeff = -center_coeff;
     }
 
-    let center_prime = Vec2::new( // 中心C'は変位なのでVec2で表現
+    let center_prime = Vec2::new(
+        // 中心C'は変位なのでVec2で表現
         center_coeff * rx * p_prime.y / ry,
         center_coeff * -ry * p_prime.x / rx,
     );
-
-    // 🚨 修正: 楕円の中心 C を計算 (Vec2で計算し、Point + Vec2 で最終位置を決定)
-    let center_diff_vec = (start_point - Point::ZERO + end_point.to_vec2()) * 0.5;
 
     let center_midpoint_vec: Vec2 = (start_point - Point::ZERO + end_point.to_vec2()) * 0.5;
     let midpoint: Point = Point::new(center_midpoint_vec.x, center_midpoint_vec.y);
@@ -214,7 +200,9 @@ fn arc_to_beziers(
     // 7. 角度の計算
     let to_angle = |p: Point| -> f64 {
         let mut angle = (p.y).atan2(p.x);
-        if angle < 0.0 { angle += 2.0 * PI; }
+        if angle < 0.0 {
+            angle += 2.0 * PI;
+        }
         angle
     };
 
@@ -223,13 +211,13 @@ fn arc_to_beziers(
         (p_prime.x - center_prime.x) / rx,
         (p_prime.y - center_prime.y) / ry,
     );
-    let mut start_angle = to_angle(start_vec_p);
+    let start_angle = to_angle(start_vec_p);
 
     let end_vec_p = Point::new(
         (-p_prime.x - center_prime.x) / rx,
         (-p_prime.y - center_prime.y) / ry,
     );
-    let mut end_angle = to_angle(end_vec_p);
+    let end_angle = to_angle(end_vec_p);
 
     // 角度差の計算
     let mut delta_angle = end_angle - start_angle;
@@ -277,7 +265,7 @@ fn parse_svg_path_to_bezpath(path_d: &str) -> Option<BezPath> {
     let mut current_point = Point::new(0.0, 0.0);
     let mut subpath_start = Point::new(0.0, 0.0);
 
-    let get_f64 = | tokens: &mut Peekable<SplitWhitespace>| -> Option<f64> {
+    let get_f64 = |tokens: &mut Peekable<SplitWhitespace>| -> Option<f64> {
         tokens.next().and_then(|s| s.parse::<f64>().ok())
     };
 
@@ -353,7 +341,6 @@ fn parse_svg_path_to_bezpath(path_d: &str) -> Option<BezPath> {
     Some(path)
 }
 
-
 /**
  * SVGパス上で指定された点に最も近い点を計算します。
  */
@@ -362,9 +349,8 @@ pub fn find_nearest_point_on_path(
     path_d: &str,
     x: f64,
     y: f64,
-    _snapping_distance_viewbox: f64
+    _snapping_distance_viewbox: f64,
 ) -> Option<NearestPointResult> {
-
     let target_point = Point::new(x, y);
 
     let bez_path = parse_svg_path_to_bezpath(path_d)?;
@@ -374,7 +360,6 @@ pub fn find_nearest_point_on_path(
 
     // PathSegのバリアントからジオメトリ型（Line, CubicBez）を抽出
     for segment in bez_path.segments() {
-
         let new_closest_point = match segment {
             // Line構造体を抽出
             PathSeg::Line(line) => {
@@ -385,11 +370,11 @@ pub fn find_nearest_point_on_path(
                 if dist_sq < min_dist_sq {
                     min_dist_sq = dist_sq;
                     // nearest_result.point は非公開なので、eval(param) を使用する
-                    Some(line.eval(nearest_result.t)) 
+                    Some(line.eval(nearest_result.t))
                 } else {
                     None
                 }
-            },
+            }
             // CubicBez構造体を抽出
             PathSeg::Cubic(cubic_bez) => {
                 let nearest_result = cubic_bez.nearest(target_point, 1.0);
@@ -401,7 +386,7 @@ pub fn find_nearest_point_on_path(
                 } else {
                     None
                 }
-            },
+            }
             // Quad Bezier (サポート外) およびその他のバリアントはスキップ
             _ => None,
         };
@@ -415,10 +400,10 @@ pub fn find_nearest_point_on_path(
     if let Some(p) = closest_point {
         return Some(NearestPointResult { x: p.x, y: p.y });
     } else {
-        return Some(NearestPointResult {x:500.0,y:500.0});
+        return Some(NearestPointResult { x: 500.0, y: 500.0 });
     }
 
-    return Some(NearestPointResult { x: 0.0, y: 0.0 })
+    Some(NearestPointResult { x: 0.0, y: 0.0 })
 }
 
 // WASMの初期化関数 (必須)

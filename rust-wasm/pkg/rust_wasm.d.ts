@@ -1,6 +1,5 @@
 /* tslint:disable */
-/* eslint-disable */
-export function chat2(dict_data: Uint8Array, input: string): string;
+ 
 export function chat(dict_data: Uint8Array, input: string): string;
 /**
  *
@@ -21,7 +20,6 @@ export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembl
 
 export interface InitOutput {
   readonly memory: WebAssembly.Memory;
-  readonly chat2: (a: number, b: number, c: number, d: number) => [number, number, number, number];
   readonly chat: (a: number, b: number, c: number, d: number) => [number, number, number, number];
   readonly __wbg_nearestpointresult_free: (a: number, b: number) => void;
   readonly __wbg_get_nearestpointresult_x: (a: number) => number;
@@ -38,7 +36,9 @@ export interface InitOutput {
   readonly rust_zstd_wasm_shim_memcpy: (a: number, b: number, c: number) => number;
   readonly rust_zstd_wasm_shim_memmove: (a: number, b: number, c: number) => number;
   readonly rust_zstd_wasm_shim_memset: (a: number, b: number, c: number) => number;
-  readonly __wbindgen_export_0: WebAssembly.Table;
+  readonly __wbindgen_exn_store: (a: number) => void;
+  readonly __externref_table_alloc: () => number;
+  readonly __wbindgen_export_2: WebAssembly.Table;
   readonly __wbindgen_malloc: (a: number, b: number) => number;
   readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
   readonly __externref_table_dealloc: (a: number) => void;
