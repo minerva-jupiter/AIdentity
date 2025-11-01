@@ -31,7 +31,7 @@ const SixthChat = dynamic<StageProps>(()=>import('../components/6_chat.tsx'),{
 const SeventhVR = dynamic<StageProps>(()=>import('../components/7_vr.tsx'),{
 	loading: Loading,
 });
-const EighthLightActivity = dynamic<StageProps>(()=>import('../components/8_lightactivity.tsx'),{
+const EighthLightActivity = dynamic<StageProps>(()=>import('../components/8_flameText.tsx'),{
 	loading: Loading,
 });
 const Error = dynamic<StageProps>(() => import('../components/error.tsx'), {
@@ -43,7 +43,7 @@ export default function Play() {
 	const pageRef = useRef<HTMLDivElement>(null);
 	const [isFullscreen, setIsFullscreen] = useState(false);
 	const [isInitialCheckDone, setIsInitialCheckDone] = useState(false);
-	const [ stage, setStage ] = useState(1);
+	const [ stage, setStage ] = useState(2);
 	const handleStageComplete = useCallback(() => {
     	setStage(prevStage => prevStage + 1);
 	}, []);
