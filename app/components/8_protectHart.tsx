@@ -91,36 +91,64 @@ const drawHeart = (ctx: CanvasRenderingContext2D, state: GameState) => {
   }
 };
 
-const FLY_SPEED_BASE = 0.05; // 速度の基準値 (deltaTimeとの積で調整)
+const FLY_SPEED_BASE = 0.3; // 速度の基準値 (deltaTimeとの積で調整)
 
 const SPAWN_LIST: Omit<FlyingObject, "id" | "isHit">[] = [
   {
-    when: 1000,
-    content: "H",
-    radius: 20,
+    when: 0,
+    content: "あなたのため",
+    radius: 15,
     position: { x: 0.1, y: 0.1 },
     velocity: { x: FLY_SPEED_BASE, y: FLY_SPEED_BASE },
   },
   {
-    when: 2500,
-    content: "W",
+    when: 1000,
+    content: "みんなそう言ってる",
     radius: 20,
     position: { x: 0.9, y: 0.1 },
     velocity: { x: -FLY_SPEED_BASE, y: FLY_SPEED_BASE },
   },
   {
-    when: 3200,
-    content: "X",
-    radius: 20,
-    position: { x: 0.5, y: 1.0 },
-    velocity: { x: 0.0, y: -FLY_SPEED_BASE * 1.5 },
+    when: 2000,
+    content: "それって本質じゃないよね？",
+    radius: 10,
+    position: { x: 0.1, y: 0.9 },
+    velocity: { x: FLY_SPEED_BASE, y: -FLY_SPEED_BASE },
+  },
+  {
+    when: 3000,
+    content: "意味がわからない。",
+    radius: 15,
+    position: { x: 1.0, y: 1.0 },
+    velocity: { x: -FLY_SPEED_BASE, y: -FLY_SPEED_BASE },
   },
   {
     when: 4000,
-    content: "!!",
+    content: "馬鹿なの？",
     radius: 25,
-    position: { x: 0.0, y: 0.5 },
-    velocity: { x: FLY_SPEED_BASE, y: 0.0 },
+    position: { x: 0.4, y: 0.0 },
+    velocity: { x: 0.0, y: FLY_SPEED_BASE * 2.5 },
+  },
+  {
+    when: 4300,
+    content: "恥ずかしい",
+    radius: 25,
+    position: { x: 0.5, y: 0.0 },
+    velocity: { x: 0.01, y: FLY_SPEED_BASE * 2.5 },
+  },
+  {
+    when: 4600,
+    content: "言うことを聞きなさい",
+    radius: 25,
+    position: { x: 0.2, y: 0.0 },
+    velocity: { x: -0.01, y: FLY_SPEED_BASE * 2.5 },
+  },
+  {
+    when: 5200,
+    content: "全部任せてたら大丈夫だからね",
+    radius: 20,
+    position: { x: 0.4, y: 1.0 },
+    velocity: { x: -0.01, y: -FLY_SPEED_BASE * 0.7 },
   },
 ];
 
@@ -395,7 +423,9 @@ export default function GameCanvas({ onComplete }: StageProps) {
         }}
       />
       {gameState.isGameOver && (
-        <div style={{ width: "100%", height: "100%" }}></div>
+        <div
+          style={{ width: "100%", height: "100%", backgroundColor: "black" }}
+        ></div>
       )}
     </div>
   );
