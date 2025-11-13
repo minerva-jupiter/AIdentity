@@ -126,21 +126,21 @@ const SPAWN_LIST: Omit<FlyingObject, "id" | "isHit">[] = [
     when: 4000,
     content: "馬鹿なの？",
     radius: 25,
-    position: { x: 0.4, y: 0.0 },
+    position: { x: 0.5, y: 0.0 },
     velocity: { x: 0.0, y: FLY_SPEED_BASE * 2.5 },
   },
   {
     when: 4300,
     content: "恥ずかしい",
     radius: 25,
-    position: { x: 0.5, y: 0.0 },
+    position: { x: 0.6, y: 0.0 },
     velocity: { x: 0.01, y: FLY_SPEED_BASE * 2.5 },
   },
   {
     when: 4600,
     content: "言うことを聞きなさい",
     radius: 25,
-    position: { x: 0.2, y: 0.0 },
+    position: { x: 0.4, y: 0.0 },
     velocity: { x: -0.01, y: FLY_SPEED_BASE * 2.5 },
   },
   {
@@ -182,6 +182,7 @@ const useGameLoop = (canvasRef: React.RefObject<HTMLCanvasElement | null>) => {
   ) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+    const ctx = canvas.getContext("2d");
     while (
       scheduledObjectsRef.current.length > 0 &&
       scheduledObjectsRef.current[0].when <= state.totalTime
@@ -203,39 +204,93 @@ const useGameLoop = (canvasRef: React.RefObject<HTMLCanvasElement | null>) => {
         obj.position.x += obj.velocity.x * deltaTime * 0.001;
         obj.position.y += obj.velocity.y * deltaTime * 0.001;
 
-        const dxMouse = obj.position.x - state.mousePosition.x;
-        const dyMouse = obj.position.y - state.mousePosition.y;
-        const distanceMouse = Math.hypot(dxMouse, dyMouse); // マウスからの距離
+        if (ctx) {
+          ctx.font = `${obj.radius * 1.5}px sans-serif`;
+        }
+        const textWidth = ctx
+          ? ctx.measureText(obj.content).width
+          : obj.radius * 2;
+        const textHeight = obj.radius * 1.5; // 高さの近似値 (radius * 1.5 = font-size)
 
-        if (distanceMouse < MOUSE_REPEL_RADIUS + obj.radius) {
-          const overlap = MOUSE_REPEL_RADIUS + obj.radius - distanceMouse;
-          const repelFactor = overlap / (MOUSE_REPEL_RADIUS + obj.radius);
+        const halfWidth = textWidth / 2;
+        const halfHeight = textHeight / 2;
 
-          const PUSH_STRENGTH = 200; // 👈 調整可能な定数 (大きめに設定)
+        const dxMouse = Math.abs(obj.position.x - state.mousePosition.x);
+        const dyMouse = Math.abs(obj.position.y - state.mousePosition.y);
 
-          const repelX = dxMouse * repelFactor * PUSH_STRENGTH;
-          const repelY = dyMouse * repelFactor * PUSH_STRENGTH;
+        const closestX = Math.max(
+          obj.position.x - halfWidth,
+          Math.min(state.mousePosition.x, obj.position.x + halfWidth),
+        );
+        const closestY = Math.max(
+          obj.position.y - halfHeight,
+          Math.min(state.mousePosition.y, obj.position.y + halfHeight),
+        );
 
-          const accelerationFactor = 0.5; // 速度変化の感度 (調整可能)
+        const dxClosest = state.mousePosition.x - closestX;
+        const dyClosest = state.mousePosition.y - closestY;
+        const distanceMouse = Math.hypot(dxClosest, dyClosest);
+
+        const effectiveRadius = 5; // マウスカーソル自体の半径の近似値
+
+        if (distanceMouse < MOUSE_REPEL_RADIUS + effectiveRadius) {
+          if (
+            dxMouse < halfWidth + effectiveRadius &&
+            dyMouse < halfHeight + effectiveRadius
+          ) {
+          }
+        }
+
+        const dxMouseCenter = obj.position.x - state.mousePosition.x;
+        const dyMouseCenter = obj.position.y - state.mousePosition.y;
+        const distanceMouseCenter = Math.hypot(dxMouseCenter, dyMouseCenter);
+
+        const effectiveObjectRadius = Math.max(halfWidth, halfHeight);
+        const totalRepelRadius = MOUSE_REPEL_RADIUS + effectiveObjectRadius;
+
+        if (distanceMouseCenter < totalRepelRadius) {
+          const overlap = totalRepelRadius - distanceMouseCenter;
+          const repelFactor = overlap / totalRepelRadius; // 衝突の中心に近いほど1.0に近づく
+
+          const PUSH_STRENGTH = 9000; // 🔥 数値を大幅に増やして強く弾く
+
+          const repelX = dxMouseCenter * repelFactor * PUSH_STRENGTH;
+          const repelY = dyMouseCenter * repelFactor * PUSH_STRENGTH;
+
+          const accelerationFactor = 0.000005;
 
           obj.velocity.x += repelX * accelerationFactor;
-          obj.velocity.y += repelY * accelerationFactor; // オブジェクトが押し出された後、マウスと重ならないように位置を少し修正 (前回と同じロジック)
+          obj.velocity.y += repelY * accelerationFactor;
 
-          if (overlap > 0 && distanceMouse > 0) {
-            const adjustX = (dxMouse / distanceMouse) * overlap;
-            const adjustY = (dyMouse / distanceMouse) * overlap;
+          if (overlap > 0 && distanceMouseCenter > 0) {
+            const adjustX = (dxMouseCenter / distanceMouseCenter) * overlap;
+            const adjustY = (dyMouseCenter / distanceMouseCenter) * overlap;
             obj.position.x += adjustX;
             obj.position.y += adjustY;
           }
         }
 
-        const dxHeart = obj.position.x - state.heartCenter.x;
-        const dyHeart = obj.position.y - state.heartCenter.y;
-        if (
-          Math.hypot(dxHeart, dyHeart) < state.heartRadius + obj.radius &&
-          !obj.isHit
-        ) {
+        const heartClosestX = Math.max(
+          obj.position.x - halfWidth,
+          Math.min(state.heartCenter.x, obj.position.x + halfWidth),
+        );
+        const heartClosestY = Math.max(
+          obj.position.y - halfHeight,
+          Math.min(state.heartCenter.y, obj.position.y + halfHeight),
+        );
+
+        const dxHeart = state.heartCenter.x - heartClosestX;
+        const dyHeart = state.heartCenter.y - heartClosestY;
+        const distanceHeart = Math.hypot(dxHeart, dyHeart);
+
+        if (distanceHeart < state.heartRadius && !obj.isHit) {
           obj.isHit = true;
+          /*
+          console.log("--- COLLISION DETECTED! ---");
+          console.log("Flying Object ID:", obj.id, "Content:", obj.content);
+          console.log("New Distortion Level:", state.distortionLevel + 0.05);
+          */
+
           state.distortionLevel = Math.min(1.0, state.distortionLevel + 0.05);
         }
 
@@ -258,6 +313,8 @@ const useGameLoop = (canvasRef: React.RefObject<HTMLCanvasElement | null>) => {
     state.flyingObjects.forEach((obj) => {
       ctx.fillStyle = "white";
       ctx.font = `${obj.radius * 1.5}px sans-serif`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
       ctx.fillText(obj.content, obj.position.x, obj.position.y);
     });
 

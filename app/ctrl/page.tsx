@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import dynamic from "next/dynamic";
+import { useRouter } from "next/navigation";
 
 export interface StageProps {
   onComplete: () => void;
@@ -43,7 +44,7 @@ const SixthChat = dynamic<StageProps>(
 const SeventhVR = dynamic<StageProps>(() => import("../components/7_vr.tsx"), {
   loading: Loading,
 });
-const EighthLightActivity = dynamic<StageProps>(
+const EighthProtect = dynamic<StageProps>(
   () => import("../components/8_protectHart.tsx"),
   {
     loading: Loading,
@@ -61,6 +62,13 @@ export default function Play() {
   const handleStageComplete = useCallback(() => {
     setStage((prevStage) => prevStage + 1);
   }, []);
+  const router = useRouter();
+
+  useEffect(() => {
+    if (stage === 9) {
+      router.push("/complete");
+    }
+  });
 
   let StageComponent: React.ReactNode;
   console.log("now, stage is ", stage);
@@ -87,7 +95,10 @@ export default function Play() {
       StageComponent = <SeventhVR onComplete={handleStageComplete} />;
       break;
     case 8:
-      StageComponent = <EighthLightActivity onComplete={handleStageComplete} />;
+      StageComponent = <EighthProtect onComplete={handleStageComplete} />;
+      break;
+    case 9:
+      StageComponent = <Loading />;
       break;
     default:
       StageComponent = <Error onComplete={handleStageComplete} />;
