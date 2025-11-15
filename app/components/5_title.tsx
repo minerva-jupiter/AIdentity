@@ -1,12 +1,13 @@
 import { useEffect, useRef } from "react";
 import { StageProps } from "../ctrl/page.tsx";
 
-const AUDIO_SOURCE = "/audio/001.wav";
+const AUDIO_SOURCE = "/audio/005.flac";
 
 export default function FifthTitle({ onComplete }: StageProps) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
+    if (audioRef.current) return;
     const audio = new Audio(AUDIO_SOURCE);
     audioRef.current = audio;
 
@@ -46,7 +47,7 @@ export default function FifthTitle({ onComplete }: StageProps) {
         alignItems: "center",
       }}
     >
-      <h1 style={{ fontSize: "8rem" }}>AIdentity</h1>
+      <h1 style={{ fontSize: "8rem", color: "#bbb" }}>AIdentity</h1>
     </nav>
   );
 }

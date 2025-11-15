@@ -43,6 +43,9 @@ export default function Home() {
       <article>
         <h2>注意:Attention</h2>
         <ul>
+          <li>
+            いち素人の実装です．不具合等々ありますが，ご了承ください．issueを投げてもらえば，治せるところは直します．
+          </li>
           <li>音が出ます。</li>
           <li>フルスクリーンを要求します。</li>
           <li>

@@ -14,8 +14,8 @@ import * as THREE from "three";
 import { StageProps } from "../ctrl/page.tsx";
 
 const AUDIO_SOURCES: Record<number, string> = {
-  1: "/audio/001.wav",
-  2: "/audio/002.wav",
+  1: "/audio/003-1.flac",
+  2: "/audio/003-2.flac",
 };
 
 const useSequentialAudio = (

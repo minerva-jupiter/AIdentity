@@ -113,13 +113,13 @@ const QuestionAnswer: React.FC<QuestionAnswerProps> = ({
   );
 };
 const myQuestions: QuestionWithAudio[] = [
-  { input: "5 + 9 = ?", ans: "14", audioUrl: "/audio/001.wav" }, // 実際には適切なURLに置き換えてください
+  { input: "5 + 9 = ?", ans: "14", audioUrl: "/audio/006-1.flac" }, // 実際には適切なURLに置き換えてください
   {
     input: "東京のローマ字表記は？",
     ans: "tokyo",
-    audioUrl: "/audio/002.wav",
+    audioUrl: "/audio/006-2.flac",
   },
-  { input: "Next.jsの親要素は？", ans: "react", audioUrl: "/audio/003.wav" },
+  { input: "Next.jsの親要素は？", ans: "react", audioUrl: "/audio/006-3.flac" },
 ];
 export default function QuizPage({ onComplete }: StageProps) {
   const handleQuizComplete = () => {

@@ -388,7 +388,7 @@ const useGameLoop = (canvasRef: React.RefObject<HTMLCanvasElement | null>) => {
 
 // Fur Audio
 
-const AUDIO_SOURCE = "/audio/001.wav";
+const AUDIO_SOURCE = "/audio/008.flac";
 const useAudioPlayback = (onComplete: () => void) => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const onCompleteRef = useRef(onComplete);
@@ -399,8 +399,7 @@ const useAudioPlayback = (onComplete: () => void) => {
 
   useEffect(() => {
     if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
+      return;
     }
 
     const audio = new Audio(AUDIO_SOURCE);
@@ -430,9 +429,11 @@ const useAudioPlayback = (onComplete: () => void) => {
     audio.oncanplaythrough = playAudio;
 
     return () => {
-      audio.pause();
-      audio.removeEventListener("ended", handleAudioEnded);
-      audioRef.current = null;
+      if (audioRef.current) {
+        audio.pause();
+        audio.removeEventListener("ended", handleAudioEnded);
+        audioRef.current = null;
+      }
     };
   }, []);
   return { audioRef };

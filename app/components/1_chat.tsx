@@ -69,7 +69,7 @@ const FirstChat: React.FC<StageProps> = ({ onComplete }) => {
 };
 export default FirstChat;
 const AUDIO_SOURCES: Record<number, string> = {
-  1: "/audio/001.wav", // 再生される音源はこれのみ
+  1: "/audio/001.flac", // 再生される音源はこれのみ
 };
 interface Message {
   id: number;
