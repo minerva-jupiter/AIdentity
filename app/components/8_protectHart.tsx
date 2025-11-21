@@ -91,7 +91,8 @@ const drawHeart = (ctx: CanvasRenderingContext2D, state: GameState) => {
   }
 };
 
-const FLY_SPEED_BASE = 0.3; // 速度の基準値 (deltaTimeとの積で調整)
+const FLY_SPEED_BASE = 0.3;
+const LIE_TIME = 10000;
 
 const SPAWN_LIST: Omit<FlyingObject, "id" | "isHit">[] = [
   {
@@ -134,7 +135,7 @@ const SPAWN_LIST: Omit<FlyingObject, "id" | "isHit">[] = [
     content: "恥ずかしい",
     radius: 25,
     position: { x: 0.6, y: 0.0 },
-    velocity: { x: 0.01, y: FLY_SPEED_BASE * 2.5 },
+    velocity: { x: -0.03, y: FLY_SPEED_BASE * 0.7 },
   },
   {
     when: 4600,
@@ -149,6 +150,118 @@ const SPAWN_LIST: Omit<FlyingObject, "id" | "isHit">[] = [
     radius: 20,
     position: { x: 0.4, y: 1.0 },
     velocity: { x: -0.01, y: -FLY_SPEED_BASE * 0.7 },
+  },
+  {
+    when: 7000,
+    content: "大した才能もないのに",
+    radius: 25,
+    position: { x: 0.7, y: 0.0 },
+    velocity: { x: -0.1, y: FLY_SPEED_BASE },
+  },
+  {
+    when: 8000,
+    content: "根性がない",
+    radius: 25,
+    position: { x: 0.3, y: 0.0 },
+    velocity: { x: 0.1, y: FLY_SPEED_BASE },
+  },
+  {
+    when: 9000,
+    content: "将来のため",
+    radius: 25,
+    position: { x: 0.5, y: 0.0 },
+    velocity: { x: 0.0, y: FLY_SPEED_BASE },
+  },
+  {
+    when: 9100,
+    content: "将来のため",
+    radius: 25,
+    position: { x: 0.5, y: 1 },
+    velocity: { x: 0.0, y: -FLY_SPEED_BASE },
+  },
+  {
+    when: 9200,
+    content: "将来のため",
+    radius: 25,
+    position: { x: 0.0, y: 0.0 },
+    velocity: { x: FLY_SPEED_BASE, y: FLY_SPEED_BASE },
+  },
+  {
+    when: 9300,
+    content: "将来のため",
+    radius: 25,
+    position: { x: 1.0, y: 1.0 },
+    velocity: { x: -FLY_SPEED_BASE, y: -FLY_SPEED_BASE },
+  },
+  {
+    when: 9400,
+    content: "将来のため",
+    radius: 25,
+    position: { x: 0.0, y: 1.0 },
+    velocity: { x: FLY_SPEED_BASE, y: -FLY_SPEED_BASE },
+  },
+  {
+    when: 9500,
+    content: "将来のため",
+    radius: 25,
+    position: { x: 1.0, y: 0.0 },
+    velocity: { x: -FLY_SPEED_BASE, y: FLY_SPEED_BASE },
+  },
+  {
+    when: LIE_TIME,
+    content: "嘘をつくな",
+    radius: 25,
+    position: { x: 0.5, y: 0.0 },
+    velocity: { x: 0.0, y: FLY_SPEED_BASE },
+  },
+  {
+    when: LIE_TIME + 100,
+    content: "嘘をつくな",
+    radius: 25,
+    position: { x: 0.5, y: 1 },
+    velocity: { x: 0.0, y: -FLY_SPEED_BASE },
+  },
+  {
+    when: LIE_TIME + 200,
+    content: "嘘をつくな",
+    radius: 25,
+    position: { x: 0.0, y: 0.0 },
+    velocity: { x: FLY_SPEED_BASE, y: FLY_SPEED_BASE },
+  },
+  {
+    when: LIE_TIME + 300,
+    content: "嘘をつくな",
+    radius: 25,
+    position: { x: 1.0, y: 1.0 },
+    velocity: { x: -FLY_SPEED_BASE, y: -FLY_SPEED_BASE },
+  },
+  {
+    when: LIE_TIME + 400,
+    content: "嘘をつくな",
+    radius: 25,
+    position: { x: 0.0, y: 1.0 },
+    velocity: { x: FLY_SPEED_BASE, y: -FLY_SPEED_BASE },
+  },
+  {
+    when: LIE_TIME + 500,
+    content: "嘘をつくな",
+    radius: 25,
+    position: { x: 1.0, y: 0.0 },
+    velocity: { x: -FLY_SPEED_BASE, y: FLY_SPEED_BASE },
+  },
+  {
+    when: LIE_TIME + 1000,
+    content: "お前は{}だ",
+    radius: 30,
+    position: { x: 0.5, y: 0.0 },
+    velocity: { x: 0, y: FLY_SPEED_BASE * 0.3 },
+  },
+  {
+    when: LIE_TIME + 5000,
+    content: "AIdentity",
+    radius: 50,
+    position: { x: 0.5, y: 0.0 },
+    velocity: { x: 0, y: FLY_SPEED_BASE * 0.2 },
   },
 ];
 

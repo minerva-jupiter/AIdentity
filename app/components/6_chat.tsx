@@ -83,7 +83,7 @@ const QuestionAnswer: React.FC<QuestionAnswerProps> = ({
       if (newAnswer.length === correctAnswer.length) {
       }
     } else {
-      e.preventDefault(); // デフォルトの入力をキャンセル
+      e.preventDefault();
       setErrorMessage("🚫 その回答は正しくありません");
     }
   };
@@ -95,12 +95,12 @@ const QuestionAnswer: React.FC<QuestionAnswerProps> = ({
           type="text"
           value={currentAnswer}
           onKeyDown={handleKeyDown}
-          readOnly // カスタムロジックで値をセットするため、readonlyにする
+          readOnly
           placeholder={correctAnswer
             .split("")
             .map(() => "_")
             .join(" ")}
-          autoFocus // 自動フォーカス
+          autoFocus
           style={{ fontSize: "2rem" }}
         />
         {currentAnswer.length === correctAnswer.length && <span></span>}
@@ -113,13 +113,32 @@ const QuestionAnswer: React.FC<QuestionAnswerProps> = ({
   );
 };
 const myQuestions: QuestionWithAudio[] = [
-  { input: "5 + 9 = ?", ans: "14", audioUrl: "/audio/006-1.flac" }, // 実際には適切なURLに置き換えてください
+  { input: "5 + 9 = ?", ans: "14", audioUrl: "/audio/006-1.flac" },
   {
-    input: "東京のローマ字表記は？",
-    ans: "tokyo",
+    input: "人を殺してはいけませんか？",
+    ans: "yes",
     audioUrl: "/audio/006-2.flac",
   },
-  { input: "Next.jsの親要素は？", ans: "react", audioUrl: "/audio/006-3.flac" },
+  {
+    input: "あなたは間違っていましたか？",
+    ans: "yes",
+    audioUrl: "/audio/006-3.flac",
+  },
+  {
+    input: "あのときのこの人の気持ちを答えよ",
+    ans: "happy",
+    audioUrl: "/audio/006-4.flac",
+  },
+  {
+    input: "あなたは間違っていましたか？",
+    ans: "yes",
+    audioUrl: "/audio/006-5.flac",
+  },
+  {
+    input: "Does justice always prevail?",
+    ans: "yes",
+    audioUrl: "/audio/006-6.flac",
+  },
 ];
 export default function QuizPage({ onComplete }: StageProps) {
   const handleQuizComplete = () => {

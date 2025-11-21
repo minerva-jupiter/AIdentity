@@ -58,7 +58,7 @@ export default function Play() {
   const pageRef = useRef<HTMLDivElement>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isInitialCheckDone, setIsInitialCheckDone] = useState(false);
-  const [stage, setStage] = useState(8);
+  const [stage, setStage] = useState(1);
   const handleStageComplete = useCallback(() => {
     setStage((prevStage) => prevStage + 1);
   }, []);
