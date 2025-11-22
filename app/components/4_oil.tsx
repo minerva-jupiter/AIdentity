@@ -67,13 +67,9 @@ export default function OilArtCanvasWrapper({ onComplete }: StageProps) {
           Math.random(),
         );
         apiRef.current.dropOil({ x, y }, color);
-        if (sceneState == 2) {
-          const tiltX = Math.random() * 0.8 - 0.4;
-          const tiltY = Math.random() * 0.8 - 0.4;
-          apiRef.current.tilt({ x: tiltX, y: tiltY });
-        } else {
-          apiRef.current.tilt({ x: 0, y: 0 });
-        }
+        const tiltX = Math.random() * 0.8 - 0.4;
+        const tiltY = Math.random() * 0.8 - 0.4;
+        apiRef.current.tilt({ x: tiltX, y: tiltY });
       }
     }, 1500);
     return () => clearInterval(intervalId);
