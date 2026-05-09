@@ -11,21 +11,25 @@
   },
   "dependencies": {
     "@react-three/drei": "^10.7.7",
-    "@react-three/fiber": "^9.4.2",
-    "@sentry/nextjs": "^10.29.0",
-    "next": "16.2.4",
-    "react": "19.2.5",
-    "react-dom": "19.2.5",
-    "styled-components": "^6.1.19",
+    "@react-three/fiber": "^9.6.1",
+    "@sentry/nextjs": "^10.52.0",
+    "next": "16.2.6",
+    "react": "19.2.6",
+    "react-dom": "19.2.6",
+    "styled-components": "^6.4.1",
     "three": "^0.184.0"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "^3.3.3",
-    "@types/node": "^25.0.0",
-    "@types/react": "^19.2.7",
+    "@eslint/eslintrc": "^3.3.5",
+    "@types/node": "^25.6.2",
+    "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "eslint": "^10.0.0",
-    "eslint-config-next": "16.2.4",
-    "typescript": "^6.0.2"
-  }
+    "eslint": "^10.3.0",
+    "eslint-config-next": "16.2.6",
+    "typescript": "^6.0.3"
+  },
+  "trustedDependencies": [
+    "@sentry/cli",
+    "unrs-resolver"
+  ]
 }
