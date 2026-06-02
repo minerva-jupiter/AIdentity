@@ -14,7 +14,7 @@
     "@react-three/fiber": "^9.6.1",
     "@sentry/nextjs": "^10.52.0",
     "next": "16.2.7",
-    "react": "19.2.6",
+    "react": "19.2.7",
     "react-dom": "19.2.6",
     "styled-components": "^6.4.1",
     "three": "^0.184.0"
