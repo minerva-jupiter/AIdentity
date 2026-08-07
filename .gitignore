@@ -50,3 +50,5 @@ bun.lock
 
 # Sentry Config File
 .env.sentry-build-plugin
+
+.open-next
