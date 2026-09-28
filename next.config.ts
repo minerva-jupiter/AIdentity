@@ -1,4 +1,4 @@
-import * as Sentry from "@sentry/nextjs";
+import { withSentryConfig } from "@sentry/nextjs/config";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
@@ -8,7 +8,7 @@ const nextConfig: NextConfig = {
   /* config options here */
 };
 
-const sentryOptions = {
+export default withSentryConfig(nextConfig, {
   // For all available options, see:
   // https://www.npmjs.com/package/@sentry/webpack-plugin#options
 
@@ -39,13 +39,4 @@ const sentryOptions = {
   // https://docs.sentry.io/product/crons/
   // https://vercel.com/docs/cron-jobs
   automaticVercelMonitors: true
-};
-
-const withSentryConfig =
-  Sentry.withSentryConfig ||
-  (Sentry as unknown as { default?: { withSentryConfig: typeof Sentry.withSentryConfig } }).default
-    ?.withSentryConfig;
-
-export default typeof withSentryConfig === "function"
-  ? withSentryConfig(nextConfig, sentryOptions)
-  : nextConfig;
+});
